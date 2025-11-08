@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   ScrollView,
+  Linking,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Animatable from "react-native-animatable";
@@ -44,19 +45,22 @@ export default function Inicio({ navigation }) {
       id: "1", 
       nombre: "Fundación Natufauna", 
       ubicacion: "Sogamoso, Boyacá",
-      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t39.30808-6/557606103_122220623606041809_3473454671844013231_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFqIRL8OwIAWaUMYn6SsNx3OK1aZ2MKxIk4rVpnYwrEiTZecsUFLDLN3foXmNiwJ8b9MCBV89rsKIoR8kTKwfI5&_nc_ohc=1soGMPIi0FgQ7kNvwHdHons&_nc_oc=AdkhTIcyfOMpBfjwVbbGNLJA26qJ0uxMjOAdzNv6hy5qV16ZWVDVA-Ob38Ah1ns3e4g&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=9B3KuYJNAsT7taxbifw8Gg&oh=00_AfhAzLmx4b5icKTxOUmwd2qlKIU_4h8zNcPoZKmFlQHL_Q&oe=6914915B" 
+      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t39.30808-6/557606103_122220623606041809_3473454671844013231_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFqIRL8OwIAWaUMYn6SsNx3OK1aZ2MKxIk4rVpnYwrEiTZecsUFLDLN3foXmNiwJ8b9MCBV89rsKIoR8kTKwfI5&_nc_ohc=1soGMPIi0FgQ7kNvwHdHons&_nc_oc=AdkhTIcyfOMpBfjwVbbGNLJA26qJ0uxMjOAdzNv6hy5qV16ZWVDVA-Ob38Ah1ns3e4g&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=9B3KuYJNAsT7taxbifw8Gg&oh=00_AfhAzLmx4b5icKTxOUmwd2qlKIU_4h8zNcPoZKmFlQHL_Q&oe=6914915B",
+      url: "https://www.facebook.com/p/Fundacion-Natufauna-Oficial-61551254278311/?locale=es_LA",
     },
     { 
       id: "2", 
       nombre: "Dejando Huella", 
       ubicacion: "Duitama, Boyacá",
-      img: "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSzpQq2cjbJTBt2Q4Eh8y4L66Nxp3rtZo7fl9TDVdzgZDYeTnvEFAozxRo0X4lZav7sWxkc7L_4NA9W_NIYRqC38ROrON6bPF0A9238ZQ3NYx_hoBxJiqlC3XT8SM8ZE7qnfzN79=s680-w680-h510-rw" 
+      img: "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSzpQq2cjbJTBt2Q4Eh8y4L66Nxp3rtZo7fl9TDVdzgZDYeTnvEFAozxRo0X4lZav7sWxkc7L_4NA9W_NIYRqC38ROrON6bPF0A9238ZQ3NYx_hoBxJiqlC3XT8SM8ZE7qnfzN79=s680-w680-h510-rw",
+      url: "https://www.facebook.com/gloriatorresacosta/?locale=es_LA",
     },
     { 
       id: "3", 
       nombre: "Refugio Salva", 
       ubicacion: "Tunja, Boyacá",
-      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t51.82787-15/559420661_18525332389032350_7124749980183384047_n.webp?stp=dst-jpg_tt6&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeG07ySQTaWHJKOLZoD-v_TvEmCbYHJq1eYSYJtgcmrV5sqScbz9QqGBKWZgJwiYU-kZ6rRHB6GIJZ4wx_O8uWLo&_nc_ohc=vdY-2xpJOzYQ7kNvwGBsD6y&_nc_oc=Adkjs1vidqP4jARKJV_j_2Lps11QxyNM-_h76CO9wS2mBGwlsC3GBF7RV3tI-3HauV0&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=rajRgQFl9dcX7cdSwD_GRQ&oh=00_AfjaWoVaj7IhDVNQwsAq8O1TIfrrp1CjyqFmMAiTrMYgqA&oe=6914A61E" 
+      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t51.82787-15/559420661_18525332389032350_7124749980183384047_n.webp?stp=dst-jpg_tt6&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeG07ySQTaWHJKOLZoD-v_TvEmCbYHJq1eYSYJtgcmrV5sqScbz9QqGBKWZgJwiYU-kZ6rRHB6GIJZ4wx_O8uWLo&_nc_ohc=vdY-2xpJOzYQ7kNvwGBsD6y&_nc_oc=Adkjs1vidqP4jARKJV_j_2Lps11QxyNM-_h76CO9wS2mBGwlsC3GBF7RV3tI-3HauV0&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=rajRgQFl9dcX7cdSwD_GRQ&oh=00_AfjaWoVaj7IhDVNQwsAq8O1TIfrrp1CjyqFmMAiTrMYgqA&oe=6914A61E",
+      url: "https://www.facebook.com/fundacion.salva/?locale=es_LA",
     },
   ];
 
@@ -130,25 +134,28 @@ export default function Inicio({ navigation }) {
           keyExtractor={(item) => item.id}
           showsHorizontalScrollIndicator={false}
           renderItem={({ item }) => (
-            <View style={styles.fundacionCard}>
-              <Image source={{ uri: item.img }} style={styles.fundacionImage} />
-              <Text style={styles.fundacionName}>{item.nombre}</Text>
+            <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
+              <View style={styles.fundacionCard}>
+                <Image source={{ uri: item.img }} style={styles.fundacionImage} />
+                <Text style={styles.fundacionName}>{item.nombre}</Text>
 
-              <View style={styles.locationContainer}>
-                <Ionicons name="location-outline" size={16} color="#a67b5b" />
-                <Text style={styles.locationText}>{item.ubicacion}</Text>
+                <View style={styles.locationContainer}>
+                  <Ionicons name="location-outline" size={16} color="#a67b5b" />
+                  <Text style={styles.locationText}>{item.ubicacion}</Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
           style={{ marginBottom: 30 }}
         />
+
 
 
         {/* Adopciones destacadas */}
         <Text style={styles.sectionTitle}>🐾 Adopciones Destacadas</Text>
         <Animatable.View animation="fadeInUp" duration={1000} style={styles.adopcionContainer}>
           <View style={styles.adopcionCard}>
-            <Ionicons name="dog-outline" size={40} color="#a47c48" />
+            <Ionicons name="paw-outline" size={40} color="#a47c48" />
             <Text style={styles.adopcionText}>Conoce a nuestros perritos</Text>
             <TouchableOpacity
               style={styles.button}
@@ -159,7 +166,7 @@ export default function Inicio({ navigation }) {
           </View>
 
           <View style={styles.adopcionCard}>
-            <Ionicons name="cat-outline" size={40} color="#a47c48" />
+            <Ionicons name="heart-outline" size={40} color="#a47c48" />
             <Text style={styles.adopcionText}>Descubre nuestros gatitos</Text>
             <TouchableOpacity
               style={styles.button}
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#f7f3ed" },
   container: { flex: 1, padding: 20 },
   header: {
-    backgroundColor: "#bfa48b",
+    backgroundColor: "#c0a994ff",
     borderRadius: 20,
     alignItems: "center",
     paddingVertical: 25,
@@ -245,46 +252,50 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 18, fontWeight: "700", color: "#6b4e2e", marginVertical: 5 },
   cardText: { fontSize: 14, color: "#5c4b3b" },
-fundacionCard: {
-  backgroundColor: "#ffffffff", // beige claro
-  borderRadius: 15,
-  marginRight: 15,
-  padding: 10,
-  width: 180,
-  alignItems: "center",
-  shadowColor: "#000",
-  shadowOpacity: 0.1,
-  shadowRadius: 5,
-  elevation: 3,
-},
-fundacionImage: {
-  width: "100%",
-  height: 100,
-  borderRadius: 10,
-  marginBottom: 8,
-},
-fundacionName: {
-  fontSize: 14,
-  fontWeight: "bold",
-  color: "#7b5e3b",
-  marginBottom: 4,
-  textAlign: "center",
-},
-locationContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-},
-locationText: {
-  fontSize: 12,
-  color: "#9a7b5f",
-  marginLeft: 4,
-},
+  fundacionCard: {
+    backgroundColor: "#ffffffff", // beige claro
+    borderRadius: 15,
+    marginRight: 15,
+    padding: 10,
+    width: 180,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  fundacionImage: {
+    width: "100%",
+    height: 100,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  fundacionName: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#7b5e3b",
+    marginBottom: 4,
+    textAlign: "center",
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  locationText: {
+    fontSize: 12,
+    color: "#9a7b5f",
+    marginLeft: 4,
+  },
 
-  adopcionContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 30 },
+  adopcionContainer: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    marginBottom: 30, 
+  },
   adopcionCard: {
     width: "47%",
-    backgroundColor: "#f4eadb",
+    backgroundColor: "#eed8b8ff",
     borderRadius: 15,
     alignItems: "center",
     padding: 18,

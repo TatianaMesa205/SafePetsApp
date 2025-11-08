@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "AppCitas",
-    "slug": "AppCitas",
+    "name": "Safe Pets",
+    "slug": "SafePets",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logoSafePets.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logoSafePets.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -25,7 +25,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.tatianablanco.AppCitas"
+      "package": "com.tatianablanco.SafePets"
     },
     "web": {
       "favicon": "./assets/favicon.png"

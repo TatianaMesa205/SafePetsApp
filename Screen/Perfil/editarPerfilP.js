@@ -1,55 +1,103 @@
-import React, { useState } from "react"
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native"
+import React, { useEffect, useState } from "react"
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native"
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import API_BASE_URL from "../../Src/Config"
 
-export default function EditarPerfil({ route, navigation }) {
-  const { user } = route.params
+export default function EditarPerfil({ navigation }) {
+  const [user, setUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  const [name, setName] = useState(user?.name || "")
-  const [email, setEmail] = useState(user?.email || "")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [passwordConfirmation, setPasswordConfirmation] = useState("")
 
+  const getRoleName = (id_roles) => {
+    switch (id_roles) {
+      case 1:
+        return "admin"
+      case 2:
+        return "adoptante"
+      default:
+        return "usuario"
+    }
+  }
+
+  // 🔄 Obtener datos del usuario autenticado
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token")
+        if (!token) return
+
+        const response = await fetch(`${API_BASE_URL}/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        })
+
+        const data = await response.json()
+        console.log("📥 Respuesta del /me en EditarPerfil:", data)
+
+        if (response.ok && data.success) {
+          const usuario = data.usuario
+          setUser(usuario)
+          setName(usuario.nombre_usuario)
+          setEmail(usuario.email)
+        } else {
+          Alert.alert("Error", "No se pudieron cargar los datos del usuario.")
+        }
+      } catch (error) {
+        console.error("Error obteniendo usuario:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  // 💾 Actualizar perfil
   const handleEditar = async () => {
-    if (!name || !email) {
-      Alert.alert("⚠️ Error", "Por favor completa los campos obligatorios")
+    if (!name.trim()) {
+      Alert.alert("⚠️ Error", "El nombre es obligatorio")
       return
     }
 
-    // 🔒 Validar longitud mínima de la contraseña
     if (password && password.length < 8) {
-      Alert.alert("⚠️ Error", "La contraseña debe tener mínimo ocho caracteres")
+      Alert.alert("⚠️ Error", "La contraseña debe tener al menos 8 caracteres")
       return
     }
 
     try {
       const token = await AsyncStorage.getItem("token")
 
-      const response = await fetch(`${API_BASE_URL}/editarPerfil`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password: password ? password : undefined,
-          password_confirmation: passwordConfirmation ? passwordConfirmation : undefined,
-        }),
-      })
+    const response = await fetch(`${API_BASE_URL}/editarPerfil`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        nombre_usuario: name,
+        password: password ? password : null, // 👈 usa "password"
+      }),
+    })
+
 
       const data = await response.json()
+      console.log("📤 Respuesta editarPerfil:", data)
 
-      if (response.ok) {
+      if (response.ok && data.success) {
         Alert.alert("✅ Éxito", "Perfil actualizado correctamente")
-        // 🔁 Redirige correctamente al perfil del usuario
         navigation.navigate("PerfilUsuarioP", { reload: true })
+      } else if (data.errors) {
+        // 👀 Mostrar errores de validación del backend
+        const errores = Object.values(data.errors).flat().join("\n")
+        Alert.alert("❌ Error de validación", errores)
       } else {
-        console.log("❌ Error backend:", data)
         Alert.alert("❌ Error", data.message || "No se pudo actualizar el perfil")
       }
     } catch (error) {
@@ -58,11 +106,20 @@ export default function EditarPerfil({ route, navigation }) {
     }
   }
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#b38b59" />
+        <Text style={styles.loadingText}>Cargando datos del perfil...</Text>
+      </View>
+    )
+  }
+
   return (
     <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={{ flexGrow: 1, justifyContent: "center" }}
-      enableOnAndroid={true}
+      enableOnAndroid
       extraScrollHeight={20}
     >
       <View style={styles.card}>
@@ -79,12 +136,12 @@ export default function EditarPerfil({ route, navigation }) {
 
         <Text style={styles.label}>Correo electrónico</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: "#eee", color: "#777" }]} // ⚙️ campo no editable
+          style={[styles.input, { backgroundColor: "#eee", color: "#777" }]}
           placeholder="Correo electrónico"
           placeholderTextColor="#b0b0b0"
           keyboardType="email-address"
           value={email}
-          editable={false} // 🚫 evita edición
+          editable={false}
         />
 
         <Text style={styles.label}>Contraseña (opcional)</Text>
@@ -97,20 +154,10 @@ export default function EditarPerfil({ route, navigation }) {
           onChangeText={setPassword}
         />
 
-        <Text style={styles.label}>Confirmar contraseña</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Confirmar contraseña"
-          placeholderTextColor="#b0b0b0"
-          secureTextEntry
-          value={passwordConfirmation}
-          onChangeText={setPasswordConfirmation}
-        />
-
         <Text style={styles.label}>Rol</Text>
         <TextInput
           style={[styles.input, { backgroundColor: "#eee", color: "#777" }]}
-          value={user?.role || ""}
+          value={getRoleName(user?.id_roles)}
           editable={false}
         />
 
@@ -125,8 +172,19 @@ export default function EditarPerfil({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f0e6", // beige
+    backgroundColor: "#f5f0e6",
     padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f1e3",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#5e4634",
   },
   card: {
     backgroundColor: "#fff",
