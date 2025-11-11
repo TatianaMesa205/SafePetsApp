@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Alert } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import API_BASE_URL from "../../Src/Config";
 
@@ -25,8 +15,8 @@ export default function Registro({ navigation }) {
       return;
     }
 
-    if (contrasena.length < 8) {
-      Alert.alert("🔒 Contraseña inválida", "Debe tener mínimo 8 caracteres");
+    if (contrasena.length < 6) {
+      Alert.alert("🔒 Contraseña inválida", "Debe tener mínimo 6 caracteres");
       return;
     }
 

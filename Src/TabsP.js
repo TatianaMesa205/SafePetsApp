@@ -5,7 +5,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 
 import InicioStackP from "./Stack/inicioStackP";
 import PerfilStackP from "./Stack/perfilStackP";
-import CitasStackP from "./Stack/citasStackP";
+import MascotasStackP from "./Stack/mascotasStackP";
 import ConfiguracionP from "./Stack/configuracionStackP";
 
 const Tab = createBottomTabNavigator();
@@ -17,12 +17,12 @@ export default function Tabs() {
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === "InicioP") iconName = "home-outline";
-          else if (route.name === "CitasP") iconName = "calendar-outline";
+          else if (route.name === "MascotasP") iconName = "paw-outline";
           else if (route.name === "PerfilP") iconName = "person-outline";
           else if (route.name === "ConfiguracionP") iconName = "settings-outline";
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#7d3ef3ff",
+        tabBarActiveTintColor: "#bd6a33ff",
         tabBarInactiveTintColor: "gray",
       })}
     >
@@ -32,12 +32,14 @@ export default function Tabs() {
         options={{ headerShown: false, 
         title: "Inicio de usuario" }} 
       />
+
       <Tab.Screen 
-        name="CitasP" 
-        component={CitasStackP} 
+        name="MascotasP" 
+        component={MascotasStackP} 
         options={{ headerShown: false, 
-        title: "Gestión de citas" }} 
+        title: "Mascotas" }} 
       />
+
       <Tab.Screen 
         name="PerfilP" 
         component={PerfilStackP} 

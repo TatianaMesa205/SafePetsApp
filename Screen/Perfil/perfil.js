@@ -7,7 +7,6 @@ import API_BASE_URL from "../../Src/Config"
 export default function Perfil({ navigation }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [modoOscuro, setModoOscuro] = useState(false)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -16,10 +15,25 @@ export default function Perfil({ navigation }) {
         if (!token) return
 
         const response = await fetch(`${API_BASE_URL}/me`, {
-          headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         })
+
         const data = await response.json()
-        if (response.ok) setUser(data.user)
+        console.log("Respuesta del /me:", data)
+
+        if (response.ok && data.success) {
+          const usuarioAdaptado = {
+            nombre: data.usuario.nombre_usuario,
+            email: data.usuario.email,
+            rol: data.rol,
+          }
+          setUser(usuarioAdaptado)
+        } else {
+          Alert.alert("Error", "No se pudieron cargar los datos del usuario.")
+        }
       } catch (error) {
         console.error("Error obteniendo usuario:", error)
       } finally {
@@ -27,13 +41,7 @@ export default function Perfil({ navigation }) {
       }
     }
 
-    const checkTheme = async () => {
-      const modo = await AsyncStorage.getItem("modo_oscuro")
-      setModoOscuro(modo === "true")
-    }
-
     fetchUser()
-    checkTheme()
   }, [])
 
   const handleLogout = async () => {
@@ -41,14 +49,19 @@ export default function Perfil({ navigation }) {
       const token = await AsyncStorage.getItem("token")
       const response = await fetch(`${API_BASE_URL}/logout`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       })
       const data = await response.json()
       if (response.ok) {
         await AsyncStorage.removeItem("token")
         Alert.alert("👋 Hasta pronto", data.message)
         navigation.replace("Login")
-      } else Alert.alert("Error", data.message || "No se pudo cerrar sesión")
+      } else {
+        Alert.alert("Error", data.message || "No se pudo cerrar sesión")
+      }
     } catch (error) {
       console.error(error)
       Alert.alert("Error", "Ocurrió un problema al cerrar sesión")
@@ -59,152 +72,200 @@ export default function Perfil({ navigation }) {
     navigation.navigate("EditarPerfil", { user })
   }
 
-  const theme = modoOscuro ? darkTheme : lightTheme
-
   if (loading) {
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
-        <ActivityIndicator size="large" color={theme.icon} />
-        <Text style={[styles.loadingText, { color: theme.text }]}>Cargando tu perfil...</Text>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#b38b59" />
+        <Text style={styles.loadingText}>Cargando tu perfil...</Text>
       </View>
     )
   }
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {user ? (
         <>
-          <View style={[styles.header, { backgroundColor: theme.header }]}>
-            <Ionicons name="person-circle" size={100} color="#fff" />
-            <Text style={[styles.name, { color: theme.headerText }]}>{user.name}</Text>
-            <View style={[styles.roleContainer, { backgroundColor: theme.roleBackground }]}>
-              <Text style={[styles.role, { color: theme.roleText }]}>{user.role}</Text>
+          {/* Encabezado con fondo beige */}
+          <View style={styles.header}>
+            <Ionicons name="person-circle-outline" size={110} color="#5e4634" />
+            <Text style={styles.name}>{user.nombre}</Text>
+            <View style={styles.roleContainer}>
+              <Text style={styles.role}>{user.rol.toUpperCase()}</Text>
             </View>
           </View>
 
-          <View style={[styles.card, { backgroundColor: theme.card }]}>
-            <Text style={[styles.cardTitle, { color: theme.title }]}>Información del Usuario</Text>
+          {/* Tarjeta de información */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Información Personal</Text>
+
             <View style={styles.infoRow}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Nombre</Text>
-              <Text style={[styles.value, { color: theme.text }]}>{user.name}</Text>
+              <Ionicons name="person-outline" size={20} color="#8b6b4b" />
+              <View style={styles.infoText}>
+                <Text style={styles.label}>Nombre</Text>
+                <Text style={styles.value}>{user.nombre}</Text>
+              </View>
             </View>
+
             <View style={styles.infoRow}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Email</Text>
-              <Text style={[styles.value, { color: theme.text }]}>{user.email}</Text>
+              <Ionicons name="mail-outline" size={20} color="#8b6b4b" />
+              <View style={styles.infoText}>
+                <Text style={styles.label}>Correo</Text>
+                <Text style={styles.value}>{user.email}</Text>
+              </View>
             </View>
+
             <View style={styles.infoRow}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Rol</Text>
-              <Text style={[styles.value, { color: theme.text }]}>{user.role}</Text>
+              <Ionicons name="shield-outline" size={20} color="#8b6b4b" />
+              <View style={styles.infoText}>
+                <Text style={styles.label}>Rol</Text>
+                <Text style={styles.value}>{user.rol}</Text>
+              </View>
             </View>
           </View>
 
-          <TouchableOpacity style={[styles.editButton, { backgroundColor: theme.button }]} onPress={handleEditProfile}>
+          {/* Botones */}
+          <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
             <Ionicons name="create-outline" size={20} color="#fff" />
             <Text style={styles.editText}>Editar Perfil</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.logoutButton, { backgroundColor: theme.logout }]} onPress={handleLogout}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#fff" />
             <Text style={styles.logoutText}>Cerrar Sesión</Text>
           </TouchableOpacity>
         </>
       ) : (
-        <Text style={[styles.errorText, { color: theme.error }]}>No se pudieron cargar los datos.</Text>
+        <Text style={styles.errorText}>No se pudieron cargar los datos.</Text>
       )}
     </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 10, fontSize: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: "#f7f1e3",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f1e3",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#5e4634",
+  },
   header: {
+    backgroundColor: "#e8d7bd",
     paddingVertical: 50,
     alignItems: "center",
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
-    marginBottom: 25,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+    marginBottom: 30,
   },
-  name: { fontSize: 24, fontWeight: "bold", marginTop: 10 },
-  roleContainer: {
+  name: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#5e4634",
     marginTop: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    borderRadius: 50,
   },
-  role: { fontSize: 14, fontWeight: "600" },
+  roleContainer: {
+    marginTop: 10,
+    backgroundColor: "#d6bfa2",
+    paddingHorizontal: 18,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  role: {
+    color: "#5e4634",
+    fontWeight: "700",
+    fontSize: 13,
+  },
   card: {
-    marginHorizontal: 20,
+    backgroundColor: "#fffaf2",
+    marginHorizontal: 25,
     padding: 22,
-    borderRadius: 15,
+    borderRadius: 20,
     shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
     marginBottom: 30,
   },
-  cardTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 15, textAlign: "center" },
-  infoRow: { marginBottom: 15 },
-  label: { fontSize: 14 },
-  value: { fontSize: 16, fontWeight: "600" },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#8b6b4b",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  infoText: {
+    marginLeft: 10,
+  },
+  label: {
+    fontSize: 13,
+    color: "#9a8566",
+  },
+  value: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#4b3a2e",
+  },
   editButton: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 20,
+    marginHorizontal: 25,
     paddingVertical: 14,
     borderRadius: 20,
+    backgroundColor: "#c79777ff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
     marginBottom: 15,
   },
-  editText: { color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 },
+  editText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
   logoutButton: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 20,
+    marginHorizontal: 25,
     paddingVertical: 14,
     borderRadius: 20,
+    backgroundColor: "#af8c7aff",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 4,
   },
-  logoutText: { color: "#fff", fontSize: 16, fontWeight: "bold", marginLeft: 8 },
-  errorText: { textAlign: "center", marginTop: 20, fontSize: 16 },
+  logoutText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+    marginLeft: 8,
+  },
+  errorText: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: 16,
+    color: "#8b6b4b",
+  },
 })
-
-// 🎨 Temas
-const lightTheme = {
-  background: "#f0f0f5",
-  header: "#b2a4dbff",
-  headerText: "#fff",
-  roleBackground: "#93b6ddff",
-  roleText: "#fff",
-  card: "#fff",
-  title: "#343a40",
-  text: "#212529",
-  textSecondary: "#6c757d",
-  button: "#a387d4",
-  logout: "#9b80be",
-  icon: "#6f42c1",
-  error: "#904f4f",
-}
-
-const darkTheme = {
-  background: "#1e1b26",
-  header: "#2c2835",
-  headerText: "#e0d7f8",
-  roleBackground: "#4a3b6f",
-  roleText: "#fff",
-  card: "#2c2835",
-  title: "#cbb7ff",
-  text: "#f4eefe",
-  textSecondary: "#bdaed9",
-  button: "#6f42c1",
-  logout: "#a34766",
-  icon: "#bba4f9",
-  error: "#ffb3c1",
-}

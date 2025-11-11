@@ -65,8 +65,8 @@ export default function EditarPerfil({ navigation }) {
       return
     }
 
-    if (password && password.length < 8) {
-      Alert.alert("⚠️ Error", "La contraseña debe tener al menos 8 caracteres")
+    if (password && password.length < 6) {
+      Alert.alert("⚠️ Error", "La contraseña debe tener al menos 6 caracteres")
       return
     }
 
