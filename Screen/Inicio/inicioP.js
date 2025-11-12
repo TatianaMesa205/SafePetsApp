@@ -1,14 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  Image,
-  ScrollView,
-  Linking,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, Linking } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Animatable from "react-native-animatable";
 
