@@ -10,6 +10,7 @@ import { View, Text,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import API_BASE_URL from "../../Src/Config";
 
 export default function RegistrarMascota() {
@@ -85,10 +86,19 @@ export default function RegistrarMascota() {
     }
 
     try {
+      // 🔑 Obtener el token guardado en AsyncStorage
+      const token = await AsyncStorage.getItem("token");
+
+      if (!token) {
+        Alert.alert("Error", "No se encontró el token. Inicia sesión nuevamente.");
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/crearMascota`, {
         method: "POST",
         headers: {
           Accept: "application/json",
+          Authorization: `Bearer ${token}`, // 👈 Aquí se envía el token de Sanctum
         },
         body: formData,
       });
@@ -109,11 +119,12 @@ export default function RegistrarMascota() {
         setDescripcion("");
         setImagen(null);
       } else {
+        console.error("Error en la respuesta:", data);
         Alert.alert("❌ Error", data.message || JSON.stringify(data));
       }
     } catch (error) {
+      console.error("Error al registrar:", error);
       Alert.alert("Error", "No se pudo registrar la mascota");
-      console.error(error);
     }
   };
 

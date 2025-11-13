@@ -32,11 +32,17 @@ export default function ListarMascotas() {
 
         const text = await response.text();
         if (text.startsWith("<")) {
-          throw new Error("El backend devolvió HTML. Revisa autenticación o CORS.");
+          throw new Error("El backend devolvió HTMLs");
         }
 
         const data = JSON.parse(text);
-        setMascotas(data);
+
+        // 🔽 Filtra mascotas válidas
+        const mascotasValidas = data.filter(
+          (m) => m.imagen && m.imagen.trim() !== "" && m.estado !== "Adoptado"
+        );
+        
+        setMascotas(mascotasValidas);
       } catch (error) {
         console.error("Error al obtener mascotas:", error);
         Alert.alert("Error", "No se pudieron cargar las mascotas.");
@@ -71,6 +77,11 @@ export default function ListarMascotas() {
         {mascotas.map((mascota, index) => {
           let cardRef = null;
 
+          // 🔹 Determinar color y texto según estado
+          let estadoColor = "#BDBDBD";
+          if (mascota.estado === "Disponible") estadoColor = "#4CAF50";
+          if (mascota.estado === "En Tratamiento") estadoColor = "#FFA726";
+
           return (
             <Animatable.View
               key={mascota.id}
@@ -80,26 +91,26 @@ export default function ListarMascotas() {
               useNativeDriver
               style={styles.cardWrapper}
             >
-              <TouchableOpacity
-                activeOpacity={0.85}
-                onPress={() => handlePress(mascota, cardRef)}
-              >
-                <Animatable.View
-                  ref={(ref) => (cardRef = ref)}
-                  style={styles.card}
-                >
+              <TouchableOpacity activeOpacity={0.85} onPress={() => handlePress(mascota, cardRef)}>
+                <Animatable.View ref={(ref) => (cardRef = ref)} style={styles.card}>
                   {mascota.imagen ? (
-                    <Image source={{ uri: mascota.imagen }} style={styles.image} />
-                  ) : (
-                    <View style={styles.placeholder}>
-                      <Text style={styles.placeholderText}>Sin imagen</Text>
-                    </View>
-                  )}
+                    <Image
+                      source={{ uri: mascota.imagen }}
+                      style={styles.image}
+                      onError={() => (mascota.imagen = null)}
+                    />
+                  ) : null}
 
                   <View style={styles.info}>
-                    <Text numberOfLines={1} style={styles.nombre}>
-                      {mascota.nombre}
-                    </Text>
+                    <View style={styles.estadoRow}>
+                      <Text numberOfLines={1} style={styles.nombre}>
+                        {mascota.nombre}
+                      </Text>
+                      <View style={[styles.estadoBadge, { backgroundColor: estadoColor }]}>
+                        <Text style={styles.estadoTexto}>{mascota.estado}</Text>
+                      </View>
+                    </View>
+
                     <Text style={styles.text} numberOfLines={1}>
                       {mascota.especie} • {mascota.sexo ?? "N/A"}
                     </Text>
@@ -161,28 +172,35 @@ const styles = StyleSheet.create({
     height: 120,
     resizeMode: "cover",
   },
-  placeholder: {
-    width: "100%",
-    height: 120,
-    backgroundColor: "#EDE1D1",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  placeholderText: {
-    color: "#9C8A74",
-    fontSize: 13,
-  },
   info: {
     paddingVertical: 10,
     paddingHorizontal: 10,
     alignItems: "flex-start",
+  },
+  estadoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  estadoBadge: {
+    borderRadius: 10,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    minWidth: 90,
+    alignItems: "center",
+  },
+  estadoTexto: {
+    color: "white",
+    fontSize: 11,
+    fontWeight: "600",
   },
   nombre: {
     fontSize: 15,
     fontWeight: "700",
     color: "#6B4E2E",
     marginBottom: 4,
-    width: "100%",
+    flexShrink: 1,
   },
   text: {
     fontSize: 13,
