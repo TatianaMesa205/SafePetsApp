@@ -147,21 +147,10 @@ export default function Inicio({ navigation }) {
         <Animatable.View animation="fadeInUp" duration={1000} style={styles.adopcionContainer}>
           <View style={styles.adopcionCard}>
             <Ionicons name="paw-outline" size={40} color="#a47c48" />
-            <Text style={styles.adopcionText}>Conoce a nuestros perritos</Text>
+            <Text style={styles.adopcionText}>Conoce a nuestras mascotas</Text>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => navigation.navigate("Mascotas")}
-            >
-              <Text style={styles.buttonText}>Ver más</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.adopcionCard}>
-            <Ionicons name="heart-outline" size={40} color="#a47c48" />
-            <Text style={styles.adopcionText}>Descubre nuestros gatitos</Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => navigation.navigate("Mascotas")}
+              onPress={() => navigation.navigate("MascotasP")}
             >
               <Text style={styles.buttonText}>Ver más</Text>
             </TouchableOpacity>
@@ -280,12 +269,13 @@ const styles = StyleSheet.create({
   },
 
   adopcionContainer: { 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    marginBottom: 30, 
+    flexDirection: "row",
+    justifyContent: "center",   // ✔ Centra el card
+    marginBottom: 30,
   },
+
   adopcionCard: {
-    width: "47%",
+    width: "70%",
     backgroundColor: "#eed8b8ff",
     borderRadius: 15,
     alignItems: "center",

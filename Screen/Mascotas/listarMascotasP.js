@@ -6,11 +6,14 @@ import { useNavigation } from "@react-navigation/native";
 import API_BASE_URL from "../../Src/Config";
 
 const { width } = Dimensions.get("window");
-const CARD_WIDTH = width * 0.44; // Dos tarjetas por fila
+const CARD_WIDTH = width * 0.44;
 
 export default function ListarMascotas() {
   const [mascotas, setMascotas] = useState([]);
+  const [mascotasFiltradas, setMascotasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filtro, setFiltro] = useState("Todos"); // 🔥 NUEVO
+
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -32,17 +35,18 @@ export default function ListarMascotas() {
 
         const text = await response.text();
         if (text.startsWith("<")) {
-          throw new Error("El backend devolvió HTMLs");
+          throw new Error("El backend devolvió HTML");
         }
 
         const data = JSON.parse(text);
 
-        // 🔽 Filtra mascotas válidas
+        // Filtrar válidas
         const mascotasValidas = data.filter(
           (m) => m.imagen && m.imagen.trim() !== "" && m.estado !== "Adoptado"
         );
-        
+
         setMascotas(mascotasValidas);
+        setMascotasFiltradas(mascotasValidas); // Inicial
       } catch (error) {
         console.error("Error al obtener mascotas:", error);
         Alert.alert("Error", "No se pudieron cargar las mascotas.");
@@ -53,6 +57,17 @@ export default function ListarMascotas() {
 
     fetchMascotas();
   }, []);
+
+  // 🔥 Función para filtrar por especie
+  const aplicarFiltro = (tipo) => {
+    setFiltro(tipo);
+
+    if (tipo === "Todos") {
+      setMascotasFiltradas(mascotas);
+    } else {
+      setMascotasFiltradas(mascotas.filter((m) => m.especie === tipo));
+    }
+  };
 
   const handlePress = (mascota, ref) => {
     if (ref) {
@@ -73,11 +88,35 @@ export default function ListarMascotas() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>🐾 Mascotas disponibles</Text>
+
+      {/* FILTROS */}
+      <View style={styles.filtrosRow}>
+        {["Todos", "Perro", "Gato"].map((tipo) => (
+          <TouchableOpacity
+            key={tipo}
+            style={[
+              styles.filtroBtn,
+              filtro === tipo && styles.filtroBtnActivo
+            ]}
+            onPress={() => aplicarFiltro(tipo)}
+          >
+            <Text
+              style={[
+                styles.filtroTexto,
+                filtro === tipo && styles.filtroTextoActivo
+              ]}
+            >
+              {tipo}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+
       <View style={styles.grid}>
-        {mascotas.map((mascota, index) => {
+        {mascotasFiltradas.map((mascota, index) => {
           let cardRef = null;
 
-          // 🔹 Determinar color y texto según estado
           let estadoColor = "#BDBDBD";
           if (mascota.estado === "Disponible") estadoColor = "#4CAF50";
           if (mascota.estado === "En Tratamiento") estadoColor = "#FFA726";
@@ -91,15 +130,18 @@ export default function ListarMascotas() {
               useNativeDriver
               style={styles.cardWrapper}
             >
-              <TouchableOpacity activeOpacity={0.85} onPress={() => handlePress(mascota, cardRef)}>
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => handlePress(mascota, cardRef)}
+              >
                 <Animatable.View ref={(ref) => (cardRef = ref)} style={styles.card}>
-                  {mascota.imagen ? (
+                  {mascota.imagen && (
                     <Image
                       source={{ uri: mascota.imagen }}
                       style={styles.image}
                       onError={() => (mascota.imagen = null)}
                     />
-                  ) : null}
+                  )}
 
                   <View style={styles.info}>
                     <View style={styles.estadoRow}>
@@ -131,7 +173,6 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 14,
     backgroundColor: "#F6EFE9",
-    alignItems: "center",
   },
   loaderWrap: {
     flex: 1,
@@ -146,6 +187,36 @@ const styles = StyleSheet.create({
     color: "#8C6B4F",
     marginBottom: 12,
   },
+
+  /* 🔥 ESTILOS FILTROS */
+  filtrosRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    marginBottom: 18,
+    marginTop: 5,
+  },
+  filtroBtn: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#C7B8A3",
+    backgroundColor: "#FFF",
+  },
+  filtroBtnActivo: {
+    backgroundColor: "#C6A27E",
+    borderColor: "#C6A27E",
+  },
+  filtroTexto: {
+    color: "#8C6B4F",
+    fontWeight: "600",
+  },
+  filtroTextoActivo: {
+    color: "white",
+  },
+
+  /* TARJETAS */
   grid: {
     width: "100%",
     flexDirection: "row",
@@ -175,11 +246,9 @@ const styles = StyleSheet.create({
   info: {
     paddingVertical: 10,
     paddingHorizontal: 10,
-    alignItems: "flex-start",
   },
   estadoRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
   },
@@ -206,7 +275,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#8C6B4F",
     marginBottom: 2,
-    width: "100%",
   },
   edad: {
     fontSize: 12,

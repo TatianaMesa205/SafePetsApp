@@ -1,28 +1,55 @@
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  ScrollView,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native"; // 🔹 Necesario
 import API_BASE_URL from "../../Src/Config";
 
 export default function DescripcionMascota({ route }) {
   const { mascota } = route.params;
+  const navigation = useNavigation(); // 🔹 Agregado
   const [vacunas, setVacunas] = useState([]);
   const [loadingVacunas, setLoadingVacunas] = useState(true);
 
-  const handleAdoptar = () => {
-    alert(`¡Has mostrado interés en adoptar a ${mascota.nombre}! 🐾`);
+  // 🔹 VERIFICAR FORMULARIO Y REDIRIGIR
+  const handleAdoptar = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const email = await AsyncStorage.getItem("email");
+
+      if (!token || !email) {
+        Alert.alert("Error", "Debes iniciar sesión primero.");
+        return;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/verificarAdoptante/${email}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const text = await response.text();
+      const existe = text === "true"; // 🔹 Backend retorna true o false
+
+      if (existe) {
+        // YA COMPLETÓ EL FORMULARIO
+        navigation.navigate("SolicitarCita", { mascota });
+      } else {
+        // NO HA COMPLETADO EL FORMULARIO
+        navigation.navigate("FormularioP");
+      }
+    } catch (error) {
+      console.error("Error al verificar adoptante", error);
+      Alert.alert("Error", "No se pudo verificar el formulario.");
+    }
   };
 
-  // 🔹 Cargar las vacunas de la mascota actual
+  // 🔹 Cargar vacunas
   useEffect(() => {
     const fetchVacunas = async () => {
       try {
@@ -61,54 +88,51 @@ export default function DescripcionMascota({ route }) {
     fetchVacunas();
   }, [mascota.id_mascotas]);
 
-  // 🎨 Color del estado de la mascota
+  // 🎨 Color del estado
   const getEstadoColor = () => {
-    if (mascota.estado === "Disponible") return "#B7D9A8"; // Verde pastel opaco
-    if (mascota.estado === "En Tratamiento") return "#F6E8A6"; // Amarillo suave
+    if (mascota.estado === "Disponible") return "#B7D9A8";
+    if (mascota.estado === "En Tratamiento") return "#F6E8A6";
     return "#E0E0E0";
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Image
-        source={{ uri: mascota.imagen }}
-        style={styles.imagen}
-        resizeMode="cover"
-      />
+      <Image source={{ uri: mascota.imagen }} style={styles.imagen} resizeMode="cover" />
 
       <Text style={styles.nombre}>{mascota.nombre}</Text>
 
       {/* DATOS GENERALES */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Mis datos</Text>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Especie:</Text>
           <Text style={styles.value}>{mascota.especie}</Text>
         </View>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Raza:</Text>
           <Text style={styles.value}>{mascota.raza || "Desconocida"}</Text>
         </View>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Edad:</Text>
           <Text style={styles.value}>{mascota.edad}</Text>
         </View>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Tamaño:</Text>
           <Text style={styles.value}>{mascota.tamano}</Text>
         </View>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Fecha de ingreso:</Text>
           <Text style={styles.value}>{mascota.fecha_ingreso}</Text>
         </View>
+
         <View style={styles.dataRow}>
           <Text style={styles.label}>Estado mascota:</Text>
-          <Text
-            style={[
-              styles.estadoValue,
-              { backgroundColor: getEstadoColor() },
-            ]}
-          >
+          <Text style={[styles.estadoValue, { backgroundColor: getEstadoColor() }]}>
             {mascota.estado}
           </Text>
         </View>
@@ -117,12 +141,10 @@ export default function DescripcionMascota({ route }) {
       {/* SALUD */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Información adicional de salud</Text>
-        <Text style={styles.historia}>
-          {mascota.estado_salud || "Sin información disponible 🐾"}
-        </Text>
+        <Text style={styles.historia}>{mascota.estado_salud || "Sin información disponible 🐾"}</Text>
       </View>
 
-      {/* CARNET DE VACUNACIÓN */}
+      {/* VACUNAS */}
       <View style={styles.vacunasCard}>
         <Text style={styles.vacunasTitle}>Carnet de vacunación</Text>
 
@@ -133,12 +155,7 @@ export default function DescripcionMascota({ route }) {
         ) : (
           vacunas.map((v, index) => (
             <View key={index} style={styles.vacunaItem}>
-              <Ionicons
-                name="medkit-outline"
-                size={24}
-                color="#4C6B4F"
-                style={{ marginRight: 10 }}
-              />
+              <Ionicons name="medkit-outline" size={24} color="#4C6B4F" style={{ marginRight: 10 }} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.vacunaNombre}>
                   {v.vacuna?.nombre_vacuna || "Vacuna desconocida"}
@@ -151,9 +168,7 @@ export default function DescripcionMascota({ route }) {
                     color="#3E5E4D"
                     style={{ marginRight: 6 }}
                   />
-                  <Text style={styles.vacunaDetalle}>
-                    Aplicada: {v.fecha_aplicacion}
-                  </Text>
+                  <Text style={styles.vacunaDetalle}>Aplicada: {v.fecha_aplicacion}</Text>
                 </View>
 
                 <View style={styles.vacunaDetalleRow}>
@@ -176,9 +191,7 @@ export default function DescripcionMascota({ route }) {
       {/* HISTORIA */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Mi historia</Text>
-        <Text style={styles.historia}>
-          {mascota.descripcion || "Sin historia disponible 🐾"}
-        </Text>
+        <Text style={styles.historia}>{mascota.descripcion || "Sin historia disponible 🐾"}</Text>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleAdoptar}>
@@ -191,7 +204,7 @@ export default function DescripcionMascota({ route }) {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: "#f5ecdcff", // Beige suave
+    backgroundColor: "#f5ecdcff",
   },
   imagen: {
     width: "100%",
@@ -202,12 +215,12 @@ const styles = StyleSheet.create({
   nombre: {
     fontSize: 28,
     fontWeight: "bold",
-    color: "#3E5E4D", // Verde oscuro natural
+    color: "#3E5E4D",
     textAlign: "center",
     marginBottom: 15,
   },
   section: {
-    backgroundColor: "#FFFDF5", // Beige más claro
+    backgroundColor: "#FFFDF5",
     borderRadius: 15,
     padding: 15,
     marginBottom: 15,
@@ -240,26 +253,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
-    overflow: "hidden",
   },
   historia: {
     color: "#555",
     fontStyle: "italic",
     lineHeight: 22,
   },
-
-  // 🩺 Carnet de vacunación con tonos verdes suaves
   vacunasCard: {
-    backgroundColor: "#E4E7D5", // Verde opaco suave
+    backgroundColor: "#E4E7D5",
     borderRadius: 18,
     padding: 18,
     marginBottom: 20,
     borderWidth: 2,
     borderColor: "#6B8E23",
-    shadowColor: "#6B8E23",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
   },
   vacunasTitle: {
     fontSize: 20,
@@ -272,7 +278,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    backgroundColor: "#F0F2E6", // Verde grisáceo claro
+    backgroundColor: "#F0F2E6",
     padding: 10,
     borderRadius: 12,
   },
@@ -285,25 +291,17 @@ const styles = StyleSheet.create({
     color: "#555",
     fontSize: 14,
   },
-
   vacunaDetalleRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
   },
-
-
-  // 🐾 Botón adoptar en tonos beige
   button: {
-    backgroundColor: "#C9C1A8", // Beige cálido
+    backgroundColor: "#C9C1A8",
     paddingVertical: 15,
     borderRadius: 50,
     alignItems: "center",
     marginVertical: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
   },
   buttonText: {
     color: "#3E5E4D",

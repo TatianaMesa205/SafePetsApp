@@ -210,7 +210,7 @@ export default function RegistrarMascota() {
         <TouchableOpacity
           style={styles.selector}
           onPress={() => {
-            const estados = ["Disponible", "Adoptado", "En Tratamiento"];
+            const estados = ["Disponible", "Adoptado", "En tratamiento"];
             const siguiente = estados[(estados.indexOf(estado) + 1) % estados.length];
             setEstado(siguiente);
           }}
