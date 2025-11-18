@@ -68,7 +68,7 @@ export default function FormularioP() {
       const data = await response.json();
 
       if (response.status === 201) {
-        Alert.alert("Éxito", "Formulario guardado correctamente");
+        Alert.alert("Éxito", "Datos guardados con exito. Si quieres adoptar da click en el boton nuevamente de '¡Quiero adoptarlo!'");
 
         setNombreCompleto("");
         setCedula("");
@@ -96,6 +96,14 @@ export default function FormularioP() {
 
           {/* Tarjeta */}
           <View style={styles.card}>
+
+            <View style={styles.infoBox}>
+              <Text style={styles.infoText}>
+                🌿 Recuerda: este formulario solo debe llenarse una vez.  
+                Si en el futuro deseas adoptar otra mascota, usaremos estos mismos datos.
+              </Text>
+            </View>
+
             <Text style={styles.title}>Formulario de Adoptante</Text>
 
             <Text style={styles.label}>Email (automático)</Text>
@@ -208,5 +216,22 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-  }
+  },
+
+  infoBox: {
+    backgroundColor: "#E5F4E3",
+    borderLeftWidth: 4,
+    borderLeftColor: "#66A06F",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+
+  infoText: {
+    color: "#3E6B45",
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "left",
+  },
+
 });

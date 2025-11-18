@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 2,
     paddingHorizontal: 6,
-    minWidth: 90,
+    minWidth: 75,
     alignItems: "center",
   },
   estadoTexto: {

@@ -7,6 +7,8 @@ import InicioStackP from "./Stack/inicioStackP";
 import PerfilStackP from "./Stack/perfilStackP";
 import MascotasStackP from "./Stack/mascotasStackP";
 import ConfiguracionP from "./Stack/configuracionStackP";
+import PublicacionesP from "./Stack/publicacionesStack";
+import HistoriasP from "./Stack/historiasStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -18,6 +20,8 @@ export default function Tabs() {
           let iconName;
           if (route.name === "InicioP") iconName = "home-outline";
           else if (route.name === "MascotasP") iconName = "paw-outline";
+          else if (route.name === "PublicacionesP") iconName = "newspaper-outline";
+          else if (route.name === "HistoriasP") iconName = "book-outline";
           else if (route.name === "PerfilP") iconName = "person-outline";
           else if (route.name === "ConfiguracionP") iconName = "settings-outline";
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -30,7 +34,7 @@ export default function Tabs() {
         name="InicioP" 
         component={InicioStackP} 
         options={{ headerShown: false, 
-        title: "Inicio de usuario" }} 
+        title: "Inicio" }} 
       />
 
       <Tab.Screen 
@@ -39,12 +43,23 @@ export default function Tabs() {
         options={{ headerShown: false, 
         title: "Mascotas" }} 
       />
-
+      <Tab.Screen 
+        name="PublicacionesP" 
+        component={PublicacionesP} 
+        options={{ headerShown: false, 
+        title: "Publicaciones" }} 
+      />
+      <Tab.Screen 
+        name="HistoriasP" 
+        component={HistoriasP} 
+        options={{ headerShown: false, 
+        title: "Historias" }} 
+      />
       <Tab.Screen 
         name="PerfilP" 
         component={PerfilStackP} 
         options={{ headerShown: false, 
-        title: "Perfil usuario" }} 
+        title: "Perfil" }} 
       />
       <Tab.Screen 
         name="ConfiguracionP" 

@@ -13,6 +13,15 @@ export default function DescripcionMascota({ route }) {
 
   // 🔹 VERIFICAR FORMULARIO Y REDIRIGIR
   const handleAdoptar = async () => {
+    // ⛔ Bloquear adopción si está en tratamiento
+    if (mascota.estado === "En Tratamiento") {
+      Alert.alert(
+        "Mascota en tratamiento",
+        "No puedes adoptar esta mascota ya que se encuentra en tratamiento y está recibiendo cuidados médicos."
+      );
+      return;
+    }
+
     try {
       const token = await AsyncStorage.getItem("token");
       const email = await AsyncStorage.getItem("email");
@@ -22,6 +31,7 @@ export default function DescripcionMascota({ route }) {
         return;
       }
 
+      // 🔹 1. Validar si existe adoptante
       const response = await fetch(
         `${API_BASE_URL}/verificarAdoptante/${email}`,
         {
@@ -34,20 +44,46 @@ export default function DescripcionMascota({ route }) {
       );
 
       const text = await response.text();
-      const existe = text === "true"; // 🔹 Backend retorna true o false
+      const existe = text === "true";
 
       if (existe) {
-        // YA COMPLETÓ EL FORMULARIO
+
+        // 🔹 2. Validar si tiene cita activa
+        const validarCita = await fetch(
+          `${API_BASE_URL}/validarCitaActiva/${email}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const citaInfo = await validarCita.json();
+
+        if (citaInfo.cita_activa) {
+          Alert.alert(
+            "Cita activa",
+            "Ya tienes una cita pendiente o confirmada. Debes esperar a que finalice o sea cancelada por un administrador antes de solicitar otra."
+          );
+          return;
+        }
+
+        // ✔ Puede solicitar cita
         navigation.navigate("SolicitarCita", { mascota });
+
       } else {
-        // NO HA COMPLETADO EL FORMULARIO
         navigation.navigate("FormularioP");
       }
+
     } catch (error) {
       console.error("Error al verificar adoptante", error);
       Alert.alert("Error", "No se pudo verificar el formulario.");
     }
   };
+
+
 
   // 🔹 Cargar vacunas
   useEffect(() => {

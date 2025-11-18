@@ -5,9 +5,9 @@ import * as Animatable from "react-native-animatable";
 
 export default function Inicio({ navigation }) {
   const imagenes = [
-    { id: "1", url: "https://i.pinimg.com/736x/17/f9/91/17f991633ba35be93d1e62ce56db1cda.jpg" },
-    { id: "2", url: "https://i.pinimg.com/1200x/28/94/0f/28940f60beea232f6175815376193a93.jpg" },
-    { id: "3", url: "https://i.pinimg.com/736x/83/7d/72/837d726caf9f49a7eb9c55c78f25e827.jpg" },
+    { id: "1", url: "https://i.pinimg.com/1200x/3d/ce/04/3dce04787730b68fb823b1ee1c21c07c.jpg" },
+    { id: "2", url: "https://i.pinimg.com/736x/01/d9/d0/01d9d00db1f443edfb69a02766aa0b0e.jpg" },
+    { id: "3", url: "https://i.pinimg.com/736x/3a/37/d7/3a37d717e8ab60f23f5d34048dd4791a.jpg" },
   ];
 
   const testimonios = [

@@ -4,7 +4,7 @@ import RegistroA from "../../Screen/RegistroA/registroA";
 
 const Stack = createStackNavigator();
 
-export default function PerfilStack() {
+export default function RegistroAStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
