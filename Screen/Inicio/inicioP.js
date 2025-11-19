@@ -146,7 +146,7 @@ export default function Inicio({ navigation }) {
         <Text style={styles.sectionTitle}>🐾 Adopciones Destacadas</Text>
         <Animatable.View animation="fadeInUp" duration={1000} style={styles.adopcionContainer}>
           <View style={styles.adopcionCard}>
-            <Ionicons name="paw-outline" size={40} color="#a47c48" />
+            <Ionicons name="paw-outline" size={40} color="#5b7558ff" />
             <Text style={styles.adopcionText}>Conoce a nuestras mascotas</Text>
             <TouchableOpacity
               style={styles.button}
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   section: {
-    backgroundColor: "#fff",
+    backgroundColor: "#dce4d9ff",
     padding: 18,
     borderRadius: 15,
     marginBottom: 20,
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#7b6042",
+    color: "#4d6b52",
     marginBottom: 10,
   },
   sectionText: { fontSize: 15, color: "#5b4a3b", lineHeight: 22 },
@@ -276,7 +276,7 @@ const styles = StyleSheet.create({
 
   adopcionCard: {
     width: "70%",
-    backgroundColor: "#eed8b8ff",
+    backgroundColor: "#c1cfc1ff",
     borderRadius: 15,
     alignItems: "center",
     padding: 18,
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
   },
   adopcionText: { fontSize: 15, color: "#6b4e2e", marginVertical: 8 },
   button: {
-    backgroundColor: "#c4a484",
+    backgroundColor: "#4d6b52",
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,

@@ -1,4 +1,4 @@
-// CitasStack.js
+
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import ListarMascotas from "../../Screen/Mascotas/listarMascotasP";
@@ -8,7 +8,7 @@ import SolicitarCita from "../../Screen/Citas/solicitarCita";
 
 const Stack = createStackNavigator();
 
-export default function CitasStack() {
+export default function MascotasStack() {
   return (
     <Stack.Navigator>
       <Stack.Screen 
