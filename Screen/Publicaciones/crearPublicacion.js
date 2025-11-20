@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Image,
-  Platform,
-  ScrollView,
-  KeyboardAvoidingView,
-} from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Platform, ScrollView, KeyboardAvoidingView } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
@@ -37,8 +26,8 @@ export default function CrearPublicacion() {
   };
 
   const crear = async () => {
-    if (!tipo.trim() || !contacto.trim()) {
-      Alert.alert("Error", "Completa todos los campos obligatorios.");
+    if (!tipo.trim() || !contacto.trim() || !descripcion.trim()) {
+      Alert.alert("Error", "Completa todos los campos.");
       return;
     }
 
@@ -80,7 +69,7 @@ export default function CrearPublicacion() {
 
       if (!resp.ok) {
         console.log(data);
-        Alert.alert("Error", "No se pudo crear la publicación.");
+        Alert.alert("Error", "Debes completar todos los campos, incluyendo descripcion.");
         return;
       }
 
@@ -107,7 +96,7 @@ export default function CrearPublicacion() {
             <Text style={styles.fechaTxt}>{fecha.toLocaleDateString()}</Text>
           </View>
 
-          <Text style={styles.label}>Tipo *</Text>
+          <Text style={styles.label}>Tipo</Text>
           <TextInput
             style={styles.input}
             placeholder="Ej: Mascota perdida"
@@ -124,7 +113,7 @@ export default function CrearPublicacion() {
             returnKeyType="next"
           />
 
-          <Text style={styles.label}>Contacto *</Text>
+          <Text style={styles.label}>Contacto</Text>
           <TextInput
             style={styles.input}
             placeholder="Teléfono o correo"
@@ -162,29 +151,31 @@ const styles = StyleSheet.create({
     fontSize: 26,
     textAlign: "center",
     marginBottom: 20,
-    color: "#6A4B82",
+    color: "#406B3A", // verde suave oscuro
     fontWeight: "700",
   },
   card: {
     backgroundColor: "#FFFFFF",
     padding: 20,
     borderRadius: 20,
-    elevation: 5,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#C8E0C3", // verde opaco muy suave
   },
   label: {
     fontSize: 16,
-    color: "#6A4B82",
+    color: "#3B5934", // verde apagado
     fontWeight: "700",
     marginBottom: 5,
   },
   input: {
-    backgroundColor: "#E7DDF3",
+    backgroundColor: "#DDEDD9", // verde pastel opaco
     padding: 14,
     borderRadius: 12,
     marginBottom: 15,
   },
   textarea: {
-    backgroundColor: "#E7DDF3",
+    backgroundColor: "#DDEDD9",
     padding: 14,
     borderRadius: 12,
     minHeight: 120,
@@ -192,17 +183,17 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   fechaBox: {
-    backgroundColor: "#E7DDF3",
+    backgroundColor: "#DDEDD9",
     padding: 14,
     borderRadius: 12,
     marginBottom: 15,
   },
   fechaTxt: {
     fontSize: 16,
-    color: "#6A4B82",
+    color: "#3F6A37",
   },
   btnImagen: {
-    backgroundColor: "#6B4FA8",
+    backgroundColor: "#6B8F71", // verde musgo suave
     padding: 15,
     borderRadius: 12,
     marginTop: 4,
@@ -213,7 +204,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   btnCrear: {
-    backgroundColor: "#9A7BB5",
+    backgroundColor: "#88A97C", // verde claro opaco
     padding: 15,
     borderRadius: 14,
     marginTop: 20,
