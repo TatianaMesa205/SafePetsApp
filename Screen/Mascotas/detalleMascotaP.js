@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native"; // 🔹 Necesario
+import { useNavigation } from "@react-navigation/native";
 import API_BASE_URL from "../../Src/Config";
 
 export default function DescripcionMascota({ route }) {
   const { mascota } = route.params;
-  const navigation = useNavigation(); // 🔹 Agregado
+  const navigation = useNavigation();
   const [vacunas, setVacunas] = useState([]);
   const [loadingVacunas, setLoadingVacunas] = useState(true);
 
-  // 🔹 VERIFICAR FORMULARIO Y REDIRIGIR
+
   const handleAdoptar = async () => {
-    // ⛔ Bloquear adopción si está en tratamiento
+    // Bloquear adopción 
     if (mascota.estado === "En Tratamiento") {
       Alert.alert(
         "Mascota en tratamiento",
@@ -31,7 +31,7 @@ export default function DescripcionMascota({ route }) {
         return;
       }
 
-      // 🔹 1. Validar si existe adoptante
+      // Validar si existe adoptante
       const response = await fetch(
         `${API_BASE_URL}/verificarAdoptante/${email}`,
         {
@@ -48,7 +48,7 @@ export default function DescripcionMascota({ route }) {
 
       if (existe) {
 
-        // 🔹 2. Validar si tiene cita activa
+        // Validar si tiene cita activa
         const validarCita = await fetch(
           `${API_BASE_URL}/validarCitaActiva/${email}`,
           {

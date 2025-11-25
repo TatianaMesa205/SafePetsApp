@@ -2,48 +2,88 @@ import React, { useEffect, useState } from "react"
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator, ScrollView } from "react-native"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Ionicons from "react-native-vector-icons/Ionicons"
+import * as Notifications from "expo-notifications"
 import API_BASE_URL from "../../Src/Config"
 
 export default function Perfil({ navigation }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // 🔔 Estado de notificaciones
+  const [notificacionesActivas, setNotificacionesActivas] = useState(false)
+  const [cargandoNotificaciones, setCargandoNotificaciones] = useState(true)
+
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = await AsyncStorage.getItem("token")
-        if (!token) return
-
-        const response = await fetch(`${API_BASE_URL}/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        })
-
-        const data = await response.json()
-        console.log("Respuesta del /me:", data)
-
-        if (response.ok && data.success) {
-          const usuarioAdaptado = {
-            nombre: data.usuario.nombre_usuario,
-            email: data.usuario.email,
-            rol: data.rol,
-          }
-          setUser(usuarioAdaptado)
-        } else {
-          Alert.alert("Error", "No se pudieron cargar los datos del usuario.")
-        }
-      } catch (error) {
-        console.error("Error obteniendo usuario:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchUser()
+    checkNotificationStatus()
   }, [])
 
+  // 📌 Cargar usuario
+  const fetchUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token")
+      if (!token) return
+
+      const response = await fetch(`${API_BASE_URL}/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        setUser({
+          nombre: data.usuario.nombre_usuario,
+          email: data.usuario.email,
+          rol: data.rol,
+        })
+      } else {
+        Alert.alert("Error", "No se pudieron cargar los datos del usuario.")
+      }
+    } catch (error) {
+      console.error("Error obteniendo usuario:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // 🔔 Verificar permisos y preferencia guardada
+  const checkNotificationStatus = async () => {
+    try {
+      const { status } = await Notifications.getPermissionsAsync()
+      const preferencia = await AsyncStorage.getItem("notificaciones_activas")
+
+      setNotificacionesActivas(status === "granted" && preferencia === "true")
+    } catch (e) {
+      console.log("Error verificando notificaciones:", e)
+    } finally {
+      setCargandoNotificaciones(false)
+    }
+  }
+
+  // 🔄 Alternar notificaciones desde la campana
+  const toggleNotificaciones = async () => {
+    if (!notificacionesActivas) {
+      // Activar
+      const { status } = await Notifications.requestPermissionsAsync()
+      if (status === "granted") {
+        await AsyncStorage.setItem("notificaciones_activas", "true")
+        setNotificacionesActivas(true)
+        Alert.alert("🔔 Notificaciones activadas", "Recibirás avisos importantes.")
+      } else {
+        Alert.alert("🚫 No se concedieron permisos", "No podremos enviarte notificaciones.")
+      }
+    } else {
+      // Desactivar
+      await AsyncStorage.setItem("notificaciones_activas", "false")
+      setNotificacionesActivas(false)
+      Alert.alert("🔕 Notificaciones desactivadas", "Ya no recibirás alertas.")
+    }
+  }
+
+  // 🚪 Cerrar sesión
   const handleLogout = async () => {
     try {
       const token = await AsyncStorage.getItem("token")
@@ -55,6 +95,7 @@ export default function Perfil({ navigation }) {
         },
       })
       const data = await response.json()
+
       if (response.ok) {
         await AsyncStorage.removeItem("token")
         Alert.alert("👋 Hasta pronto", data.message)
@@ -83,16 +124,39 @@ export default function Perfil({ navigation }) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+
+
       {user ? (
         <>
-          {/* Encabezado con fondo beige */}
           <View style={styles.header}>
-            <Ionicons name="person-circle-outline" size={110} color="#5e4634" />
-            <Text style={styles.name}>{user.nombre}</Text>
-            <View style={styles.roleContainer}>
-              <Text style={styles.role}>{user.rol.toUpperCase()}</Text>
+
+            {/* Campana en la esquina superior derecha */}
+            <View style={styles.notificationIconContainer}>
+              {cargandoNotificaciones ? (
+                <ActivityIndicator size="small" color="#5e4634" />
+              ) : (
+                <TouchableOpacity onPress={toggleNotificaciones}>
+                  <Ionicons
+                    name={notificacionesActivas ? "notifications" : "notifications-off-outline"}
+                    size={32}
+                    color="#5e4634"
+                  />
+                </TouchableOpacity>
+              )}
             </View>
+
+            {/* Avatar centrado */}
+            <View style={{ alignItems: "center" }}>
+              <Ionicons name="person-circle-outline" size={110} color="#5e4634" />
+              <Text style={styles.name}>{user.nombre}</Text>
+
+              <View style={styles.roleContainer}>
+                <Text style={styles.role}>{user.rol.toUpperCase()}</Text>
+              </View>
+            </View>
+
           </View>
+
 
           {/* Tarjeta de información */}
           <View style={styles.card}>
@@ -104,6 +168,10 @@ export default function Perfil({ navigation }) {
                 <Text style={styles.label}>Nombre</Text>
                 <Text style={styles.value}>{user.nombre}</Text>
               </View>
+            </View>
+
+            <View className="infoRow">
+              <View className="infoText"></View>
             </View>
 
             <View style={styles.infoRow}>
@@ -127,6 +195,14 @@ export default function Perfil({ navigation }) {
           <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
             <Ionicons name="create-outline" size={20} color="#fff" />
             <Text style={styles.editText}>Editar Perfil</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => navigation.navigate("HistorialCitas")}
+          >
+            <Ionicons name="calendar-outline" size={20} color="#fff" />
+            <Text style={styles.editText}>Historial de citas</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -156,18 +232,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontSize: 16,
     color: "#5e4634",
-  },
-  header: {
-    backgroundColor: "#e8d7bd",
-    paddingVertical: 50,
-    alignItems: "center",
-    borderBottomLeftRadius: 40,
-    borderBottomRightRadius: 40,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-    marginBottom: 30,
   },
   name: {
     fontSize: 24,
@@ -268,4 +332,31 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#8b6b4b",
   },
+  header: {
+    backgroundColor: "#e8d7bd",
+    paddingTop: 50,
+    paddingBottom: 30,
+    paddingHorizontal: 25,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    marginBottom: 30,
+
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // <--- Centramos contenido principal
+    position: "relative",     // <--- Permite posicionar la campana arriba derecha
+  },
+  notificationIconContainer: {
+    position: "absolute",
+    right: 20,   // <--- lo mueve al borde derecho
+    top: 20,     // <--- lo sube al borde superior
+    zIndex: 10,
+  },
+
+
+
 })
