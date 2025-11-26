@@ -65,9 +65,39 @@ export default function HistorialCitas({ navigation }) {
     }
   };
 
-  // 👉 Filtrar citas según estado
-  const citasProceso = citas.filter(c => c.estado === "Pendiente" || c.estado === "Confirmada");
-  const citasPasadas = citas.filter(c => c.estado === "Cancelada" || c.estado === "Completada");
+  // 👉 Convertir fecha del backend a fecha local real
+  const parseFechaCita = (fechaString) => {
+    if (!fechaString) return null;
+
+    const [fecha, hora] = fechaString.split(" ");
+    const [y, m, d] = fecha.split("-").map(Number);
+    const [hh, mm, ss] = hora.split(":").map(Number);
+
+    return new Date(y, m - 1, d, hh, mm, ss || 0);
+  };
+
+  const ahora = new Date();
+
+  // 👉 Citas pasadas
+  const citasPasadas = citas.filter(c => {
+    const fecha = parseFechaCita(c.fecha_cita);
+
+    // Si la fecha ya pasó → es pasada
+    if (fecha && fecha < ahora) return true;
+
+    // Cancelada o Completada → pasada
+    return c.estado === "Cancelada" || c.estado === "Completada";
+  });
+
+  // 👉 Citas en proceso
+  const citasProceso = citas.filter(c => {
+    const fecha = parseFechaCita(c.fecha_cita);
+
+    // Si ya pasó → no va en proceso
+    if (fecha && fecha < ahora) return false;
+
+    return c.estado === "Pendiente" || c.estado === "Confirmada";
+  });
 
   const renderCita = (cita) => (
     <TouchableOpacity

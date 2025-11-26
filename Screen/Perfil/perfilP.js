@@ -8,6 +8,7 @@ import API_BASE_URL from "../../Src/Config"
 export default function Perfil({ navigation }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [adoptante, setAdoptante] = useState(null)
 
   // 🔔 Estado de notificaciones
   const [notificacionesActivas, setNotificacionesActivas] = useState(false)
@@ -18,7 +19,6 @@ export default function Perfil({ navigation }) {
     checkNotificationStatus()
   }, [])
 
-  // 📌 Cargar usuario
   const fetchUser = async () => {
     try {
       const token = await AsyncStorage.getItem("token")
@@ -34,11 +34,34 @@ export default function Perfil({ navigation }) {
       const data = await response.json()
 
       if (response.ok && data.success) {
-        setUser({
+
+        const usuarioData = {
           nombre: data.usuario.nombre_usuario,
           email: data.usuario.email,
           rol: data.rol,
-        })
+        }
+
+        setUser(usuarioData)
+
+        // 🔍 VALIDAR SI TIENE REGISTRO EN ADOPTANTES (NUEVO ENDPOINT)
+        const adoptanteResponse = await fetch(
+          `${API_BASE_URL}/adoptanteInfo/${usuarioData.email}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+
+        const adoptanteJson = await adoptanteResponse.json()
+
+        if (adoptanteJson.success) {
+          setAdoptante(adoptanteJson.adoptante)
+        } else {
+          setAdoptante(null)
+        }
+
       } else {
         Alert.alert("Error", "No se pudieron cargar los datos del usuario.")
       }
@@ -48,6 +71,8 @@ export default function Perfil({ navigation }) {
       setLoading(false)
     }
   }
+
+
 
   // 🔔 Verificar permisos y preferencia guardada
   const checkNotificationStatus = async () => {
@@ -110,8 +135,13 @@ export default function Perfil({ navigation }) {
   }
 
   const handleEditProfile = () => {
-    navigation.navigate("EditarPerfilP", { user })
+    if (adoptante) {
+      navigation.navigate("EditarPerfilCompleto", { user, adoptante })
+    } else {
+      navigation.navigate("EditarPerfilP", { user })
+    }
   }
+
 
   if (loading) {
     return (
@@ -160,12 +190,12 @@ export default function Perfil({ navigation }) {
 
           {/* Tarjeta de información */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Información Personal</Text>
+            <Text style={styles.cardTitle}>Datos de inicio de sesion</Text>
 
             <View style={styles.infoRow}>
               <Ionicons name="person-outline" size={20} color="#8b6b4b" />
               <View style={styles.infoText}>
-                <Text style={styles.label}>Nombre</Text>
+                <Text style={styles.label}>Nombre de usuario</Text>
                 <Text style={styles.value}>{user.nombre}</Text>
               </View>
             </View>
@@ -191,6 +221,46 @@ export default function Perfil({ navigation }) {
             </View>
           </View>
 
+          {/* Tarjeta DATOS DE ADOPTANTE (solo si existe) */}
+          {adoptante && (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Datos de Adoptante</Text>
+
+              <View style={styles.infoRow}>
+                <Ionicons name="person-outline" size={20} color="#8b6b4b" />
+                <View style={styles.infoText}>
+                  <Text style={styles.label}>Nombre completo</Text>
+                  <Text style={styles.value}>{adoptante.nombre_completo}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Ionicons name="id-card-outline" size={20} color="#8b6b4b" />
+                <View style={styles.infoText}>
+                  <Text style={styles.label}>Cédula</Text>
+                  <Text style={styles.value}>{adoptante.cedula}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Ionicons name="call-outline" size={20} color="#8b6b4b" />
+                <View style={styles.infoText}>
+                  <Text style={styles.label}>Teléfono</Text>
+                  <Text style={styles.value}>{adoptante.telefono}</Text>
+                </View>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Ionicons name="home-outline" size={20} color="#8b6b4b" />
+                <View style={styles.infoText}>
+                  <Text style={styles.label}>Dirección</Text>
+                  <Text style={styles.value}>{adoptante.direccion}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+
           {/* Botones */}
           <TouchableOpacity style={styles.editButton} onPress={handleEditProfile}>
             <Ionicons name="create-outline" size={20} color="#fff" />
@@ -198,12 +268,13 @@ export default function Perfil({ navigation }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.editButton}
+            style={[styles.editButton, { backgroundColor: "#8ba27cff" }]}
             onPress={() => navigation.navigate("HistorialCitas")}
           >
             <Ionicons name="calendar-outline" size={20} color="#fff" />
             <Text style={styles.editText}>Historial de citas</Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={20} color="#fff" />
@@ -294,7 +365,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
     paddingVertical: 14,
     borderRadius: 20,
-    backgroundColor: "#c79777ff",
+    backgroundColor: "#c2a490ff",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
@@ -314,7 +385,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 25,
     paddingVertical: 14,
     borderRadius: 20,
-    backgroundColor: "#af8c7aff",
+    backgroundColor: "#b46d65ff",
     shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,

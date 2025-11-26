@@ -6,7 +6,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import InicioStackP from "./Stack/inicioStackP";
 import PerfilStackP from "./Stack/perfilStackP";
 import MascotasStackP from "./Stack/mascotasStackP";
-import ConfiguracionP from "./Stack/configuracionStackP";
 import PublicacionesP from "./Stack/publicacionesStack";
 import HistoriasP from "./Stack/historiasStack";
 
@@ -23,7 +22,6 @@ export default function Tabs() {
           else if (route.name === "PublicacionesP") iconName = "newspaper-outline";
           else if (route.name === "HistoriasP") iconName = "book-outline";
           else if (route.name === "PerfilP") iconName = "person-outline";
-          else if (route.name === "ConfiguracionP") iconName = "settings-outline";
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: "#bd6a33ff",
@@ -60,12 +58,6 @@ export default function Tabs() {
         component={PerfilStackP} 
         options={{ headerShown: false, 
         title: "Perfil" }} 
-      />
-      <Tab.Screen 
-        name="ConfiguracionP" 
-        component={ConfiguracionP} 
-        options={{ headerShown: false, 
-        title: "Configuracion" }} 
       />
     </Tab.Navigator>
   );

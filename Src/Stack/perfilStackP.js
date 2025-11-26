@@ -4,6 +4,7 @@ import Perfil from "../../Screen/Perfil/perfilP";
 import EditarPerfil from "../../Screen/Perfil/editarPerfil";
 import DetalleCita from "../../Screen/Citas/detalleCita";
 import HistorialCitas from "../../Screen/Citas/historialCitas";
+import EditarPerfilCompleto from "../../Screen/Perfil/editarPerfilCompleto";
 
 const Stack = createStackNavigator();
 
@@ -19,6 +20,11 @@ export default function PerfilStack() {
         name="EditarPerfilP" 
         component={EditarPerfil} 
         options={{ title: "Edita tu perfil" }} 
+      />
+      <Stack.Screen 
+        name="EditarPerfilCompleto" 
+        component={EditarPerfilCompleto} 
+        options={{ title: "Edita tu información completa" }} 
       />
       <Stack.Screen 
         name="HistorialCitas" 
