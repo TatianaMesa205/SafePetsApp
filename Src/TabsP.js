@@ -8,6 +8,7 @@ import PerfilStackP from "./Stack/perfilStackP";
 import MascotasStackP from "./Stack/mascotasStackP";
 import PublicacionesP from "./Stack/publicacionesStack";
 import HistoriasP from "./Stack/historiasStack";
+import DonacionesStackP from "./Stack/donacionesStack";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,6 +22,7 @@ export default function Tabs() {
           else if (route.name === "MascotasP") iconName = "paw-outline";
           else if (route.name === "PublicacionesP") iconName = "newspaper-outline";
           else if (route.name === "HistoriasP") iconName = "book-outline";
+          else if (route.name === "DonacionesP") iconName = "heart-outline";
           else if (route.name === "PerfilP") iconName = "person-outline";
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -52,6 +54,12 @@ export default function Tabs() {
         component={HistoriasP} 
         options={{ headerShown: false, 
         title: "Historias" }} 
+      />
+      <Tab.Screen 
+        name="DonacionesP" 
+        component={DonacionesStackP} 
+        options={{ headerShown: false, 
+        title: "Donaciones" }} 
       />
       <Tab.Screen 
         name="PerfilP" 

@@ -1,60 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, ScrollView, Linking } from "react-native";
+import API_BASE_URL from "../../Src/Config";
 import Ionicons from "react-native-vector-icons/Ionicons";
+import AsyncStorage from "@react-native-async-storage/async-storage"
 import * as Animatable from "react-native-animatable";
 
 export default function Inicio({ navigation }) {
+
+  const [adopciones, setAdopciones] = useState([]);
+  const [loadingAdopciones, setLoadingAdopciones] = useState(true);
+
   const imagenes = [
     { id: "1", url: "https://i.pinimg.com/1200x/3d/ce/04/3dce04787730b68fb823b1ee1c21c07c.jpg" },
     { id: "2", url: "https://i.pinimg.com/736x/01/d9/d0/01d9d00db1f443edfb69a02766aa0b0e.jpg" },
     { id: "3", url: "https://i.pinimg.com/736x/3a/37/d7/3a37d717e8ab60f23f5d34048dd4791a.jpg" },
   ];
 
-  const testimonios = [
-    {
-      id: "1",
-      nombre: "María López",
-      texto: "Gracias a Safe Pets adopté a Luna, una perrita maravillosa. ¡Cambió mi vida!",
-      icon: "heart-outline",
-    },
-    {
-      id: "2",
-      nombre: "Carlos Pérez",
-      texto: "Adoptar fue fácil y seguro. El equipo me ayudó en cada paso.",
-      icon: "paw-outline",
-    },
-    {
-      id: "3",
-      nombre: "Laura Gómez",
-      texto: "Safe Pets me devolvió la fe en la adopción responsable ❤️",
-      icon: "happy-outline",
-    },
-  ];
+  useEffect(() => {
+    const fetchAdopciones = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) return;
 
-  const fundaciones = [
-    { 
-      id: "1", 
-      nombre: "Fundación Natufauna", 
-      ubicacion: "Sogamoso, Boyacá",
-      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t39.30808-6/557606103_122220623606041809_3473454671844013231_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeFqIRL8OwIAWaUMYn6SsNx3OK1aZ2MKxIk4rVpnYwrEiTZecsUFLDLN3foXmNiwJ8b9MCBV89rsKIoR8kTKwfI5&_nc_ohc=1soGMPIi0FgQ7kNvwHdHons&_nc_oc=AdkhTIcyfOMpBfjwVbbGNLJA26qJ0uxMjOAdzNv6hy5qV16ZWVDVA-Ob38Ah1ns3e4g&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=9B3KuYJNAsT7taxbifw8Gg&oh=00_AfhAzLmx4b5icKTxOUmwd2qlKIU_4h8zNcPoZKmFlQHL_Q&oe=6914915B",
-      url: "https://www.facebook.com/p/Fundacion-Natufauna-Oficial-61551254278311/?locale=es_LA",
-    },
-    { 
-      id: "2", 
-      nombre: "Dejando Huella", 
-      ubicacion: "Duitama, Boyacá",
-      img: "https://lh3.googleusercontent.com/gps-cs-s/AG0ilSzpQq2cjbJTBt2Q4Eh8y4L66Nxp3rtZo7fl9TDVdzgZDYeTnvEFAozxRo0X4lZav7sWxkc7L_4NA9W_NIYRqC38ROrON6bPF0A9238ZQ3NYx_hoBxJiqlC3XT8SM8ZE7qnfzN79=s680-w680-h510-rw",
-      url: "https://www.facebook.com/gloriatorresacosta/?locale=es_LA",
-    },
-    { 
-      id: "3", 
-      nombre: "Refugio Salva", 
-      ubicacion: "Tunja, Boyacá",
-      img: "https://scontent.feoh2-1.fna.fbcdn.net/v/t51.82787-15/559420661_18525332389032350_7124749980183384047_n.webp?stp=dst-jpg_tt6&_nc_cat=109&ccb=1-7&_nc_sid=127cfc&_nc_eui2=AeG07ySQTaWHJKOLZoD-v_TvEmCbYHJq1eYSYJtgcmrV5sqScbz9QqGBKWZgJwiYU-kZ6rRHB6GIJZ4wx_O8uWLo&_nc_ohc=vdY-2xpJOzYQ7kNvwGBsD6y&_nc_oc=Adkjs1vidqP4jARKJV_j_2Lps11QxyNM-_h76CO9wS2mBGwlsC3GBF7RV3tI-3HauV0&_nc_zt=23&_nc_ht=scontent.feoh2-1.fna&_nc_gid=rajRgQFl9dcX7cdSwD_GRQ&oh=00_AfjaWoVaj7IhDVNQwsAq8O1TIfrrp1CjyqFmMAiTrMYgqA&oe=6914A61E",
-      url: "https://www.facebook.com/fundacion.salva/?locale=es_LA",
-    },
-  ];
+        const response = await fetch(`${API_BASE_URL}/listarMascotas`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
 
+        const text = await response.text();
+        if (text.startsWith("<")) throw new Error("HTML no válido");
+
+        const data = JSON.parse(text);
+
+        const adoptadas = data
+          .filter(m =>
+            m.estado &&
+            m.estado.toString().trim().toLowerCase().includes("adopt")
+          )
+          .sort(() => Math.random() - 0.5) // MEZCLA ALEATORIA
+          .slice(0, 3); // TOMA 3 AL AZAR
+
+        setAdopciones(adoptadas);
+      } catch (error) {
+        console.log("Error al cargar adopciones:", error);
+      } finally {
+        setLoadingAdopciones(false);
+      }
+    };
+
+    fetchAdopciones();
+  }, []);
 
   return (
     <View style={styles.screen}>
@@ -118,32 +116,8 @@ export default function Inicio({ navigation }) {
           </Text>
         </Animatable.View>
 
-        <Text style={styles.sectionTitle}>🏡 Fundaciones Cercanas</Text>
-        <FlatList
-          horizontal
-          data={fundaciones}
-          keyExtractor={(item) => item.id}
-          showsHorizontalScrollIndicator={false}
-          renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
-              <View style={styles.fundacionCard}>
-                <Image source={{ uri: item.img }} style={styles.fundacionImage} />
-                <Text style={styles.fundacionName}>{item.nombre}</Text>
-
-                <View style={styles.locationContainer}>
-                  <Ionicons name="location-outline" size={16} color="#a67b5b" />
-                  <Text style={styles.locationText}>{item.ubicacion}</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-          style={{ marginBottom: 30 }}
-        />
-
-
-
         {/* Adopciones destacadas */}
-        <Text style={styles.sectionTitle}>🐾 Adopciones Destacadas</Text>
+        <Text style={styles.sectionTitle}>🐾 Mascotas</Text>
         <Animatable.View animation="fadeInUp" duration={1000} style={styles.adopcionContainer}>
           <View style={styles.adopcionCard}>
             <Ionicons name="paw-outline" size={40} color="#5b7558ff" />
@@ -157,28 +131,80 @@ export default function Inicio({ navigation }) {
           </View>
         </Animatable.View>
 
-        {/* Testimonios */}
-        <Text style={styles.sectionTitle}>💬 Testimonios</Text>
-        {testimonios.map((item, index) => (
-          <Animatable.View
-            key={item.id}
-            animation="fadeInUp"
-            delay={index * 300}
-            style={styles.testimonioCard}
-          >
-            <Ionicons name={item.icon} size={22} color="#bfa48b" />
-            <Text style={styles.testimonioText}>"{item.texto}"</Text>
-            <Text style={styles.testimonioAutor}>— {item.nombre}</Text>
-          </Animatable.View>
-        ))}
+        {/* Adopciones recientes */}
+        <Text style={styles.sectionTitle}>🐾 Adopciones</Text>
+
+        {loadingAdopciones ? (
+          <Text style={{ textAlign: "center", color: "#6b4e2e", marginBottom: 20 }}>
+            Cargando adopciones...
+          </Text>
+        ) : (
+
+          adopciones.length === 0 ? (
+            <Text style={{ textAlign: "center", color: "#6b4e2e", marginBottom: 20 }}>
+              No hay adopciones aún
+            </Text>
+          ) : (
+
+            adopciones.map((item, index) => (
+              <Animatable.View
+                key={item.id}
+                animation="fadeInUp"
+                delay={index * 300}
+                style={styles.adopcionMiniCard}
+              >
+                <TouchableOpacity onPress={() => navigation.navigate("HistoriasP")}>
+                  <Text style={styles.adopcionMiniNombre}>{item.nombre}</Text>
+
+                  <Text style={styles.adopcionMiniDescripcion}>
+                    {item.descripcion
+                      ? item.descripcion.slice(0, 60) + "..."
+                      : "Sin descripción."}
+                  </Text>
+                </TouchableOpacity>
+              </Animatable.View>
+            ))
+          )
+        )}
 
         {/* Pie de página */}
         <View style={styles.footer}>
-          <Ionicons name="paw" size={20} color="#fff" />
-          <Text style={styles.footerText}>
-            Safe Pets © 2025 — Fundación de Rescate Animal {"\n"}Hecho con 💛 por amantes de los animales
+          <Ionicons name="paw" size={26} color="#fff" style={{ marginBottom: 8 }} />
+
+          <Text style={styles.footerTitle}>Safe Pets</Text>
+
+          <Text style={styles.footerDescription}>
+            Fundación dedicada al rescate, rehabilitación y adopción de animales en situación de vulnerabilidad.
+          </Text>
+
+          {/* Contacto */}
+          <View style={styles.contactRow}>
+            <Ionicons name="call-outline" size={18} color="#fff" />
+            <Text style={styles.contactText}>314 2301295</Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.contactRow}
+            onPress={() => Linking.openURL("mailto:paulatatianamesa@gmail.com")}
+          >
+            <Ionicons name="mail-outline" size={18} color="#fff" />
+            <Text style={styles.contactText}>paulatatianamesa@gmail.com</Text>
+          </TouchableOpacity>
+
+          {/* WhatsApp */}
+          <TouchableOpacity
+            style={styles.contactRow}
+            onPress={() => Linking.openURL("https://wa.me/573142301295")}
+          >
+            <Ionicons name="logo-whatsapp" size={18} color="#fff" />
+            <Text style={styles.contactText}>WhatsApp</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.footerCopy}>
+            © 2025 Safe Pets — Todos los derechos reservados
           </Text>
         </View>
+
       </ScrollView>
     </View>
   );
@@ -309,4 +335,63 @@ const styles = StyleSheet.create({
     marginTop: 25,
   },
   footerText: { color: "#fff", fontSize: 13, textAlign: "center", marginTop: 5 },
+  adopcionMiniCard: {
+    backgroundColor: "#fffaf3",
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#f0e2c4",
+  },
+
+  adopcionMiniNombre: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#6b4e2e",
+    marginBottom: 4,
+  },
+
+  adopcionMiniDescripcion: {
+    fontSize: 14,
+    color: "#5b4a3b",
+    fontStyle: "italic",
+  },
+
+  footerTitle: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "800",
+  marginBottom: 6,
+},
+
+footerDescription: {
+  color: "#fff",
+  fontSize: 13,
+  textAlign: "center",
+  marginBottom: 12,
+  opacity: 0.9,
+  lineHeight: 18,
+},
+
+contactRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginBottom: 6,
+},
+
+contactText: {
+  color: "#fff",
+  fontSize: 14,
+  marginLeft: 6,
+},
+
+footerCopy: {
+  color: "#fff",
+  fontSize: 12,
+  marginTop: 12,
+  textAlign: "center",
+  opacity: 0.8,
+},
+
+
 });

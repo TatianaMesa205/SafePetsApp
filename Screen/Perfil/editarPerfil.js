@@ -125,10 +125,10 @@ export default function EditarPerfil({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.title}>✏️ Editar Perfil</Text>
 
-        <Text style={styles.label}>Nombre</Text>
+        <Text style={styles.label}>Nombre de usuario</Text>
         <TextInput
           style={styles.input}
-          placeholder="Nombre completo"
+          placeholder="Nombre"
           placeholderTextColor="#b0b0b0"
           value={name}
           onChangeText={setName}
