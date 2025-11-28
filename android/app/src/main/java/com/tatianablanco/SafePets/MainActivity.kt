@@ -1,4 +1,4 @@
-package com.tatianablanco.AppCitas
+package com.tatianablanco.SafePets
 
 import android.os.Build
 import android.os.Bundle

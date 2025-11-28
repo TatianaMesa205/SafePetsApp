@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.tatianablanco.AppCitas'
+    namespace 'com.tatianablanco.SafePets'
     defaultConfig {
-        applicationId 'com.tatianablanco.AppCitas'
+        applicationId 'com.tatianablanco.SafePets'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

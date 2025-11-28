@@ -17,7 +17,7 @@
     },
     "android": {
       "useNextNotificationsApi": true,
-      "intentFilters": [], 
+      "intentFilters": [],
       "permissions": [],
       "usesClearTextTraffic": true,
       "adaptiveIcon": {
@@ -32,7 +32,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "d1d0c8ad-7a76-4f2c-a994-7a27e1fbbb83"
+        "projectId": "4d5ae9a7-957a-4038-bf2c-c274ff630d52"
       }
     }
   }
