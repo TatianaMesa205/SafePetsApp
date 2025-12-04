@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Alert, Image, View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Dimensions } from "react-native";
 import * as Animatable from "react-native-animatable";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 import API_BASE_URL from "../../Src/Config";
 
 const { width } = Dimensions.get("window");
@@ -12,16 +13,47 @@ export default function ListarMascotas() {
   const [mascotas, setMascotas] = useState([]);
   const [mascotasFiltradas, setMascotasFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filtro, setFiltro] = useState("Todos"); // 🔥 NUEVO
+  const [filtro, setFiltro] = useState("Todos");
+  const [favoritos, setFavoritos] = useState([]);
 
   const navigation = useNavigation();
+
+  // 🔥 Cargar favoritos guardados
+  const cargarFavoritos = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("favoritos");
+      if (stored) {
+        setFavoritos(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.log("Error cargando favoritos:", e);
+    }
+  };
+
+  // 🔥 Marcar / Desmarcar favorito
+  const toggleFavorito = async (id) => {
+    let nuevos;
+
+    if (favoritos.includes(id)) {
+      nuevos = favoritos.filter((f) => f !== id);
+    } else {
+      nuevos = [...favoritos, id];
+    }
+
+    setFavoritos(nuevos);
+    await AsyncStorage.setItem("favoritos", JSON.stringify(nuevos));
+  };
+
+  useEffect(() => {
+    cargarFavoritos();
+  }, []);
 
   useEffect(() => {
     const fetchMascotas = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
         if (!token) {
-          Alert.alert("Error", "No se encontró el token. Inicia sesión nuevamente.");
+          Alert.alert("Error", "Debes iniciar sesión nuevamente.");
           return;
         }
 
@@ -34,19 +66,16 @@ export default function ListarMascotas() {
         });
 
         const text = await response.text();
-        if (text.startsWith("<")) {
-          throw new Error("El backend devolvió HTML");
-        }
+        if (text.startsWith("<")) throw new Error("Backend devolvió HTML");
 
         const data = JSON.parse(text);
 
-        // Filtrar válidas
         const mascotasValidas = data.filter(
           (m) => m.imagen && m.imagen.trim() !== "" && m.estado !== "Adoptado"
         );
 
         setMascotas(mascotasValidas);
-        setMascotasFiltradas(mascotasValidas); // Inicial
+        setMascotasFiltradas(mascotasValidas);
       } catch (error) {
         console.error("Error al obtener mascotas:", error);
         Alert.alert("Error", "No se pudieron cargar las mascotas.");
@@ -58,15 +87,21 @@ export default function ListarMascotas() {
     fetchMascotas();
   }, []);
 
-  // 🔥 Función para filtrar por especie
+  // 🔥 Filtro incluyendo “Favoritos”
   const aplicarFiltro = (tipo) => {
     setFiltro(tipo);
 
     if (tipo === "Todos") {
       setMascotasFiltradas(mascotas);
-    } else {
-      setMascotasFiltradas(mascotas.filter((m) => m.especie === tipo));
+      return;
     }
+
+    if (tipo === "Favoritos") {
+      setMascotasFiltradas(mascotas.filter((m) => favoritos.includes(m.id_mascotas)));
+      return;
+    }
+
+    setMascotasFiltradas(mascotas.filter((m) => m.especie === tipo));
   };
 
   const handlePress = (mascota, ref) => {
@@ -89,14 +124,15 @@ export default function ListarMascotas() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>🐾 Mascotas disponibles</Text>
 
-      {/* FILTROS */}
+      {/* 🔥 NUEVO FILTRO FAVORITOS */}
       <View style={styles.filtrosRow}>
-        {["Todos", "Perro", "Gato"].map((tipo) => (
+        {["Todos", "Perro", "Gato", "Favoritos"].map((tipo) => (
           <TouchableOpacity
             key={tipo}
             style={[
               styles.filtroBtn,
-              filtro === tipo && styles.filtroBtnActivo
+              filtro === tipo && styles.filtroBtnActivo,
+              tipo === "Favoritos" && { backgroundColor: "#ffefadff", borderColor: "#bba048ff" }
             ]}
             onPress={() => aplicarFiltro(tipo)}
           >
@@ -112,24 +148,37 @@ export default function ListarMascotas() {
         ))}
       </View>
 
-
+      {/* LISTADO */}
       <View style={styles.grid}>
         {mascotasFiltradas.map((mascota, index) => {
           let cardRef = null;
-
           let estadoColor = "#BDBDBD";
           if (mascota.estado === "Disponible") estadoColor = "#4CAF50";
           if (mascota.estado === "En Tratamiento") estadoColor = "#FFA726";
 
+          const esFavorito = favoritos.includes(mascota.id_mascotas);
+
           return (
             <Animatable.View
-              key={mascota.id}
+              key={mascota.id_mascotas}
               animation="fadeInUp"
               duration={550}
               delay={index * 80}
               useNativeDriver
               style={styles.cardWrapper}
             >
+              {/* 🔥 ESTRELLITA FAVORITO */}
+              <TouchableOpacity
+                style={styles.star}
+                onPress={() => toggleFavorito(mascota.id_mascotas)}
+              >
+                <Ionicons
+                  name={esFavorito ? "star" : "star-outline"}
+                  size={21}
+                  color={esFavorito ? "#FFD700" : "#758060ff"}
+                />
+              </TouchableOpacity>
+
               <TouchableOpacity
                 activeOpacity={0.85}
                 onPress={() => handlePress(mascota, cardRef)}
@@ -139,15 +188,12 @@ export default function ListarMascotas() {
                     <Image
                       source={{ uri: mascota.imagen }}
                       style={styles.image}
-                      onError={() => (mascota.imagen = null)}
                     />
                   )}
 
                   <View style={styles.info}>
                     <View style={styles.estadoRow}>
-                      <Text numberOfLines={1} style={styles.nombre}>
-                        {mascota.nombre}
-                      </Text>
+                      <Text numberOfLines={1} style={styles.nombre}>{mascota.nombre}</Text>
                       <View style={[styles.estadoBadge, { backgroundColor: estadoColor }]}>
                         <Text style={styles.estadoTexto}>{mascota.estado}</Text>
                       </View>
@@ -187,8 +233,6 @@ const styles = StyleSheet.create({
     color: "#8C6B4F",
     marginBottom: 12,
   },
-
-  /* 🔥 ESTILOS FILTROS */
   filtrosRow: {
     flexDirection: "row",
     justifyContent: "space-around",
@@ -216,7 +260,6 @@ const styles = StyleSheet.create({
     color: "white",
   },
 
-  /* TARJETAS */
   grid: {
     width: "100%",
     flexDirection: "row",
@@ -226,7 +269,21 @@ const styles = StyleSheet.create({
   cardWrapper: {
     width: CARD_WIDTH,
     marginBottom: 16,
+    position: "relative",
   },
+
+  /* 🔥 Estrellita Favorito */
+  star: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 5,
+    padding: 5,
+    backgroundColor: "rgba(255, 255, 255, 0.48)",
+    borderRadius: 50,
+    padding: 2,
+  },
+
   card: {
     backgroundColor: "#FFF8F0",
     borderRadius: 12,

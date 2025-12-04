@@ -5,11 +5,12 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import API_BASE_URL from "../../Src/Config";
 
 export default function Login({ navigation }) {
-  const [email, setEmail] = useState("");
   const [contrasena, setContrasena] = useState("");
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
+  const [identificador, setIdentificador] = useState("");
 
   const handleLogin = async () => {
-    if (!email || !contrasena) {
+    if (!identificador || !contrasena) {
       Alert.alert("Atención", "Por favor ingresa los datos");
       return;
     }
@@ -22,7 +23,7 @@ export default function Login({ navigation }) {
           Accept: "application/json",
         },
         body: JSON.stringify({
-          email,
+          identificador: identificador,
           password: contrasena,
         }),
       });
@@ -85,11 +86,10 @@ export default function Login({ navigation }) {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Ingresa el email"
+                    placeholder="Email o nombre de usuario"
                     placeholderTextColor="#bfa48b"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
+                    value={identificador}
+                    onChangeText={setIdentificador}
                     autoCapitalize="none"
                   />
                 </View>
@@ -102,15 +102,28 @@ export default function Login({ navigation }) {
                     color="#8b7355"
                     style={styles.icon}
                   />
+
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { paddingRight: 40 }]}
                     placeholder="Contraseña"
                     placeholderTextColor="#bfa48b"
-                    secureTextEntry
+                    secureTextEntry={!mostrarContrasena}
                     value={contrasena}
                     onChangeText={setContrasena}
                   />
+
+                  <TouchableOpacity
+                    onPress={() => setMostrarContrasena(!mostrarContrasena)}
+                    style={styles.eyeButton}
+                  >
+                    <Ionicons
+                      name={mostrarContrasena ? "eye" : "eye-off"}
+                      size={22}
+                      color="#8b7355"
+                    />
+                  </TouchableOpacity>
                 </View>
+
 
                 {/* Botón de inicio */}
                 <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -248,4 +261,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textDecorationLine: "underline",
   },
+  eyeButton: {
+    position: "absolute",
+    right: 10,
+    padding: 2,
+  }
 });

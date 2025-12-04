@@ -11,9 +11,55 @@ export default function DescripcionMascota({ route }) {
   const [vacunas, setVacunas] = useState([]);
   const [loadingVacunas, setLoadingVacunas] = useState(true);
 
+  // ⭐ FAVORITOS
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("favoritos");
+        const favs = stored ? JSON.parse(stored) : [];
+
+        // 🔥 AHORA verifica por ID (para ser compatible con ListarMascotas)
+        const exists = favs.includes(mascota.id_mascotas);
+        setIsFavorite(exists);
+      } catch (err) {
+        console.error("Error cargando favoritos:", err);
+      }
+    };
+
+    loadFavorites();
+  }, [mascota.id_mascotas]);
+
+  const toggleFavorite = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("favoritos");
+      let favs = stored ? JSON.parse(stored) : [];
+
+      if (isFavorite) {
+        favs = favs.filter((id) => id !== mascota.id_mascotas);
+        Alert.alert("Eliminado", `${mascota.nombre} fue removido de tus favoritos.`);
+      } else {
+        favs.push(mascota.id_mascotas);
+        Alert.alert(
+          "Agregado a favoritos",
+          `Has agregado a ${mascota.nombre} como favorita 🐾💛`
+        );
+      }
+
+      await AsyncStorage.setItem("favoritos", JSON.stringify(favs));
+      setIsFavorite(!isFavorite);
+
+      // 🔥 REDIRECCIÓN PARA FORZAR REFRESCO
+      navigation.navigate("ListarMascotas");   // <-- AGREGA ESTA LÍNEA
+
+    } catch (err) {
+      console.error("Error guardando favorito:", err);
+    }
+  };
+
 
   const handleAdoptar = async () => {
-    // Bloquear adopción 
     if (mascota.estado === "En Tratamiento") {
       Alert.alert(
         "Mascota en tratamiento",
@@ -31,7 +77,7 @@ export default function DescripcionMascota({ route }) {
         return;
       }
 
-      // Validar si existe adoptante
+      // 1️⃣ Verificar si es adoptante
       const response = await fetch(
         `${API_BASE_URL}/verificarAdoptante/${email}`,
         {
@@ -47,8 +93,7 @@ export default function DescripcionMascota({ route }) {
       const existe = text === "true";
 
       if (existe) {
-
-        // Validar si tiene cita activa
+        // 2️⃣ Consultar si tiene cita activa (backend ya hace la validación completa)
         const validarCita = await fetch(
           `${API_BASE_URL}/validarCitaActiva/${email}`,
           {
@@ -62,18 +107,22 @@ export default function DescripcionMascota({ route }) {
 
         const citaInfo = await validarCita.json();
 
-        if (citaInfo.cita_activa) {
+        // -------------------------------
+        // ⭐ LOGICA FINAL (MUY SIMPLE)
+        // -------------------------------
+        if (citaInfo.cita_activa === true) {
           Alert.alert(
             "Cita activa",
-            "Ya tienes una cita pendiente o confirmada. Debes esperar a que finalice o sea cancelada por un administrador antes de solicitar otra."
+            "Tienes una cita activa en este momento. Debes esperar a que finalice o cancelarla antes de solicitar otra."
           );
           return;
         }
 
-        // ✔ Puede solicitar cita
+        // Si cita_activa = false → SE PERMITE
         navigation.navigate("SolicitarCita", { mascota });
 
       } else {
+        // No existe adoptante → llenar formulario
         navigation.navigate("FormularioP");
       }
 
@@ -85,7 +134,7 @@ export default function DescripcionMascota({ route }) {
 
 
 
-  // 🔹 Cargar vacunas
+  // Cargar vacunas
   useEffect(() => {
     const fetchVacunas = async () => {
       try {
@@ -124,7 +173,6 @@ export default function DescripcionMascota({ route }) {
     fetchVacunas();
   }, [mascota.id_mascotas]);
 
-  // 🎨 Color del estado
   const getEstadoColor = () => {
     if (mascota.estado === "Disponible") return "#B7D9A8";
     if (mascota.estado === "En Tratamiento") return "#F6E8A6";
@@ -133,11 +181,22 @@ export default function DescripcionMascota({ route }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+
+      {/* ⭐ BOTÓN FAVORITO */}
+      <TouchableOpacity style={styles.favoriteIcon} onPress={toggleFavorite}>
+        <Ionicons
+          name={isFavorite ? "star" : "star-outline"}
+          size={34}
+          color={isFavorite ? "#E8C100" : "#555"}
+        />
+      </TouchableOpacity>
+
       <Image source={{ uri: mascota.imagen }} style={styles.imagen} resizeMode="cover" />
 
       <Text style={styles.nombre}>{mascota.nombre}</Text>
 
-      {/* DATOS GENERALES */}
+      {/* --- RESTO DEL CÓDIGO (SIN CAMBIOS) --- */}
+
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Mis datos</Text>
 
@@ -174,13 +233,11 @@ export default function DescripcionMascota({ route }) {
         </View>
       </View>
 
-      {/* SALUD */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Información adicional de salud</Text>
         <Text style={styles.historia}>{mascota.estado_salud || "Sin información disponible 🐾"}</Text>
       </View>
 
-      {/* VACUNAS */}
       <View style={styles.vacunasCard}>
         <Text style={styles.vacunasTitle}>Carnet de vacunación</Text>
 
@@ -224,7 +281,6 @@ export default function DescripcionMascota({ route }) {
         )}
       </View>
 
-      {/* HISTORIA */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Mi historia</Text>
         <Text style={styles.historia}>{mascota.descripcion || "Sin historia disponible 🐾"}</Text>
@@ -242,6 +298,17 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#f5ecdcff",
   },
+
+  favoriteIcon: {
+    position: "absolute",
+    top: 30,
+    right: 30,
+    zIndex: 10,
+    backgroundColor: "rgba(255, 255, 255, 0.42)",
+    padding: 6,
+    borderRadius: 50,
+  },
+
   imagen: {
     width: "100%",
     height: 250,
@@ -333,14 +400,14 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   button: {
-    backgroundColor: "#C9C1A8",
+    backgroundColor: "#b2c0b3ff",
     paddingVertical: 15,
     borderRadius: 50,
     alignItems: "center",
     marginVertical: 20,
   },
   buttonText: {
-    color: "#3E5E4D",
+    color: "#517763ff",
     fontSize: 18,
     fontWeight: "bold",
   },
