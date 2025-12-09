@@ -20,12 +20,26 @@ export default function DetalleCita({ route, navigation }) {
   const fecha = cita.fecha_cita?.split(" ")[0];
   const hora = cita.fecha_cita?.split(" ")[1]?.substring(0, 5);
 
+  // -------------------------------------------------------------
+  // ✅ VALIDAR SI LA CITA YA PASÓ
+  // -------------------------------------------------------------
+  const citaYaPaso = () => {
+    // Convierte la fecha y hora de la cita a un objeto Date
+    const fechaCita = new Date(cita.fecha_cita);
+    const hoy = new Date();
+
+    // Compara la fecha de la cita con la fecha y hora actual
+    // Si la fecha de la cita es menor o igual a la actual, ya pasó (o está sucediendo)
+    return fechaCita <= hoy;
+  };
+
   // 👉 Validar si se puede cancelar (mínimo 2 días antes)
   const puedeCancelar = () => {
     const fechaCita = new Date(cita.fecha_cita);
     const hoy = new Date();
     const diferencia = fechaCita - hoy;
     const dias = diferencia / (1000 * 60 * 60 * 24);
+    // Debe cumplirse que no haya pasado Y que haya 2 días de diferencia
     return dias >= 2;
   };
 
@@ -33,6 +47,12 @@ export default function DetalleCita({ route, navigation }) {
   // 🔔 PROGRAMAR NOTIFICACIÓN UN DÍA ANTES A LA MISMA HORA
   // -------------------------------------------------------------
   const programarNotificacion = async () => {
+    // Si la cita ya pasó, no se puede programar
+    if (citaYaPaso()) {
+      Alert.alert("⚠️ La cita ya pasó, no se puede programar un recordatorio.");
+      return;
+    }
+
     if ((cita.estado || "").toLowerCase() !== "confirmada") {
       Alert.alert("Solo puedes programar recordatorios para citas CONFIRMADAS.");
       return;
@@ -170,9 +190,13 @@ export default function DetalleCita({ route, navigation }) {
     }
   };
 
+  // -------------------------------------------------------------
+  // 🖥️ RENDERIZADO
+  // -------------------------------------------------------------
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>🐾 Detalle de la Cita</Text>
+      
 
       <View style={styles.card}>
         {/* Mascota */}
@@ -217,26 +241,27 @@ export default function DetalleCita({ route, navigation }) {
         ) : null}
       </View>
 
-      {/* 🔔 BOTÓN DE NOTIFICACIÓN SOLO SI ESTÁ CONFIRMADA */}
-      {cita.estado === "Confirmada" && (
+      {/* 🔔 BOTÓN DE NOTIFICACIÓN SOLO SI ESTÁ CONFIRMADA Y NO HA PASADO */}
+      {cita.estado === "Confirmada" && !citaYaPaso() && (
         <TouchableOpacity style={styles.notifBtn} onPress={programarNotificacion}>
           <Ionicons name="notifications-outline" size={20} color="white" />
           <Text style={styles.notifText}>Recordarme un día antes</Text>
         </TouchableOpacity>
       )}
 
-      {/* ❌ CANCELAR CITA */}
-      {(cita.estado === "Pendiente" || cita.estado === "Confirmada") && (
-        <TouchableOpacity
-          style={[styles.cancelBtn, loading && { opacity: 0.5 }]}
-          disabled={loading}
-          onPress={handleCancelar}
-        >
-          <Text style={styles.cancelText}>
-            {loading ? "Cancelando..." : "Cancelar cita"}
-          </Text>
-        </TouchableOpacity>
-      )}
+      {/* ❌ CANCELAR CITA SOLO SI ESTÁ PENDIENTE/CONFIRMADA Y NO HA PASADO */}
+      {(cita.estado === "Pendiente" || cita.estado === "Confirmada") &&
+        !citaYaPaso() && (
+          <TouchableOpacity
+            style={[styles.cancelBtn, loading && { opacity: 0.5 }]}
+            disabled={loading}
+            onPress={handleCancelar}
+          >
+            <Text style={styles.cancelText}>
+              {loading ? "Cancelando..." : "Cancelar cita"}
+            </Text>
+          </TouchableOpacity>
+        )}
     </ScrollView>
   );
 }

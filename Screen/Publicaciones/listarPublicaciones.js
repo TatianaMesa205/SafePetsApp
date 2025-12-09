@@ -24,6 +24,7 @@ export default function ListarPublicaciones() {
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({}); // ver más / ver menos
 
+  // Función corregida: usa id_publicaciones como clave
   const toggleExpand = (id) => {
     setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -84,7 +85,10 @@ export default function ListarPublicaciones() {
 
       <View style={{ width: "100%", alignItems: "center" }}>
         {publicaciones.map((pub, index) => {
-          const isExpanded = expanded[pub.id];
+          // 🛑 CAMBIO CLAVE: Usar pub.id_publicaciones para identificar la publicación
+          const ID_PUBLICACION = pub.id_publicaciones; 
+          const isExpanded = expanded[ID_PUBLICACION]; // Usa la clave correcta en el estado
+
           const descripcionCorta =
             pub.descripcion && pub.descripcion.length > 120
               ? pub.descripcion.substring(0, 120) + "..."
@@ -92,7 +96,7 @@ export default function ListarPublicaciones() {
 
           return (
             <Animatable.View
-              key={pub.id}
+              key={ID_PUBLICACION} // 🛑 CAMBIO CLAVE: Usar la clave correcta para React
               animation="fadeInUp"
               duration={500}
               delay={index * 80}
@@ -132,7 +136,7 @@ export default function ListarPublicaciones() {
                 </Text>
 
                 {pub.descripcion && pub.descripcion.length > 120 && (
-                  <TouchableOpacity onPress={() => toggleExpand(pub.id)}>
+                  <TouchableOpacity onPress={() => toggleExpand(ID_PUBLICACION)}> {/* 🛑 CAMBIO CLAVE: Usa la clave correcta en el onPress */}
                     <Text style={styles.verMas}>
                       {isExpanded ? "Ver menos ▲" : "Ver más ▼"}
                     </Text>
@@ -152,7 +156,7 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 20,
     paddingHorizontal: 10,
-    backgroundColor: "#e0ddd4ff",
+    backgroundColor: "#e5eee2ff",
   },
   loaderWrap: {
     flex: 1,

@@ -13,6 +13,17 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import * as Animatable from "react-native-animatable";
 import * as Clipboard from "expo-clipboard";
 
+// Paleta de Colores Terrosos/Opacos
+const COLORS = {
+  background: "#c0ccbbff", // Beige claro para el fondo de la pantalla
+  darkCoffee: "#4b3832", // Café oscuro para títulos y texto principal
+  mediumGreen: "#98a17cff", // Verde opaco para el encabezado y botones secundarios
+  lightBeige: "#e7e0d5ff", // Beige medio para cajas de mensaje y pie de página
+  deepGreen: "#67774aff", // Verde militar/profundo para botones primarios y acentos
+  white: "#ffffff",
+  alertBorder: "#978a7aff", // Tono de borde para cajas de mensaje
+};
+
 export default function DonacionesP() {
   const abrirNequi = () => {
     Linking.openURL("nequi://app");
@@ -20,16 +31,15 @@ export default function DonacionesP() {
 
   const copiarTexto = async (texto) => {
     await Clipboard.setStringAsync(texto);
-    Alert.alert("Número copiado", "El número fue copiado con éxito ✔️");
+    Alert.alert("Número copiado", "El número fue copiado con éxito ✔");
   };
 
   return (
     <View style={styles.screen}>
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* ENCABEZADO */}
         <Animatable.View animation="fadeInDown" duration={800} style={styles.header}>
-          <Ionicons name="heart" size={55} color="#fff" />
+          <Ionicons name="heart" size={55} color={COLORS.white} />
           <Text style={styles.headerTitle}>Donaciones</Text>
           <Text style={styles.headerSubtitle}>
             Tu ayuda transforma vidas 🐾💚
@@ -73,30 +83,29 @@ export default function DonacionesP() {
 
         {/* PIE DE PÁGINA ACLARATORIO */}
         <Animatable.View animation="fadeInUp" duration={1200} style={styles.footer}>
-          <Ionicons name="information-circle-outline" size={22} color="#4d6b52" />
+          <Ionicons name="information-circle-outline" size={22} color={COLORS.darkCoffee} />
           <Text style={styles.footerText}>
             Las donaciones se realizan exclusivamente a través de nuestra página web oficial.  
           </Text>
         </Animatable.View>
-
       </ScrollView>
     </View>
   );
 }
 
 /* ============================
-            ESTILOS
+          ESTILOS
 ============================ */
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#eef7f1",
+    backgroundColor: COLORS.background, // Fondo Beige Claro
     padding: 20,
   },
 
   header: {
-    backgroundColor: "#6fbf97",
+    backgroundColor: COLORS.mediumGreen, // Verde Opaco
     padding: 30,
     borderRadius: 22,
     alignItems: "center",
@@ -105,51 +114,51 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    color: "#fff",
+    color: COLORS.white,
     fontSize: 32,
     fontWeight: "800",
     marginTop: 8,
   },
 
   headerSubtitle: {
-    color: "#fff",
+    color: COLORS.white,
     opacity: 0.95,
     marginTop: 6,
     fontSize: 16,
   },
 
   messageBox: {
-    backgroundColor: "#ffe8d6",
+    backgroundColor: COLORS.lightBeige, // Beige medio
     padding: 20,
     borderRadius: 18,
     marginBottom: 25,
     borderLeftWidth: 6,
-    borderLeftColor: "#ffb98a",
+    borderLeftColor: COLORS.alertBorder, // Borde más suave
   },
 
   messageText: {
     fontSize: 16,
-    color: "#5b4a3b",
+    color: COLORS.darkCoffee, // Café Oscuro
     lineHeight: 24,
   },
 
   sectionTitle: {
     fontSize: 22,
     fontWeight: "800",
-    color: "#4d6b52",
+    color: COLORS.darkCoffee, // Café Oscuro
     marginBottom: 15,
   },
 
   /* CARD PRINCIPAL NEQUI */
   cardNequi: {
-    backgroundColor: "#ffffff",
+    backgroundColor: COLORS.white,
     padding: 25,
     borderRadius: 20,
     alignItems: "center",
     marginBottom: 25,
     elevation: 4,
     borderWidth: 1,
-    borderColor: "#c9e8d2",
+    borderColor: COLORS.lightBeige, // Borde sutil
   },
 
   logoNequi: {
@@ -162,19 +171,19 @@ const styles = StyleSheet.create({
   nequiTitle: {
     fontSize: 24,
     fontWeight: "900",
-    color: "#4d6b52",
+    color: COLORS.deepGreen, // Verde Profundo
     marginBottom: 5,
   },
 
   nequiNumber: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#4d6b52",
+    color: COLORS.darkCoffee, // Café Oscuro
     marginBottom: 15,
   },
 
   buttonPrimary: {
-    backgroundColor: "#4d6b52",
+    backgroundColor: COLORS.deepGreen, // Verde Profundo
     paddingVertical: 10,
     paddingHorizontal: 25,
     borderRadius: 20,
@@ -182,31 +191,31 @@ const styles = StyleSheet.create({
   },
 
   buttonSecondary: {
-    backgroundColor: "#7aad81",
+    backgroundColor: COLORS.mediumGreen, // Verde Opaco
     paddingVertical: 10,
     paddingHorizontal: 25,
     borderRadius: 20,
   },
 
   buttonText: {
-    color: "#fff",
+    color: COLORS.white,
     fontWeight: "800",
     fontSize: 15,
   },
 
   footer: {
-    backgroundColor: "#d6eadf",
+    backgroundColor: COLORS.lightBeige, // Beige Medio
     padding: 18,
     borderRadius: 16,
     alignItems: "center",
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: "#b8d7c8",
+    borderColor: COLORS.alertBorder, // Borde más suave
   },
 
   footerText: {
     textAlign: "center",
-    color: "#4d6b52",
+    color: COLORS.darkCoffee, // Café Oscuro
     fontSize: 14,
     marginTop: 8,
     fontWeight: "600",
